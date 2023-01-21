@@ -14,6 +14,10 @@ using System.Text;
 
 namespace RuneEncoding;
 
+/// <summmary>
+///     Automatically handles the common aspects of character encoding, such as surrogate
+///     composition, thereby allowing implementers to worry about specific concerns only.
+/// </summary>
 public abstract class RuneEncoder : Encoder
 {
     private readonly SurrogateComposer ConvertComposer = new();
@@ -61,8 +65,43 @@ public abstract class RuneEncoder : Encoder
         return byteIndex - startByteIndex;
     }
 
+    /// <summary>
+    ///     Returns the number of bytes needed to encode the specified Unicode scalar value.
+    /// </summary>
+    /// <param name="scalarValue">
+    ///     The Unicode scalar value, guarnanteed to be within one of the following ranges:
+    ///     <list>
+    ///         <item>U+0000 - U+D799</item>
+    ///         <item>U+E000 - U+10FFFF</item>
+    ///     </list>
+    ///     As such, a surrogate will never be specified, nor will anything outside of Unicode's
+    ///     defined maximum code point.
+    /// </param>
+    /// <returns>
+    ///     The number of bytes needed to encode the specified Unicode scalar value.
+    /// </returns>
     protected abstract int ByteCount(int scalarValue);
 
+    /// <summary>
+    ///     Encodes the specified Unicode scalar value to the provided byte array.
+    /// </summary>
+    /// <param name="scalarValue">
+    ///     The Unicode scalar value, guarnanteed to be within one of the following ranges:
+    ///     <list>
+    ///         <item>U+0000 - U+D799</item>
+    ///         <item>U+E000 - U+10FFFF</item>
+    ///     </list>
+    ///     As such, a surrogate will never be specified, nor will anything outside of Unicode's
+    ///     defined maximum code point.
+    /// </param>
+    /// <param name="bytes">
+    ///     The provided byte array to encode to, which is assumed to be large enough to
+    ///     accomodate the complete byte encoding of the scalar value.
+    /// </param>
+    /// <param name="index">The offset within the byte array to encode at.</param>
+    /// <returns>
+    ///     The number of bytes used to encode the specified Unicode scalar value.
+    /// </returns>
     protected abstract int WriteBytes(int scalarValue, byte[] bytes, int index);
 
     public override void Reset()
@@ -71,5 +110,8 @@ public abstract class RuneEncoder : Encoder
         ResetState();
     }
 
+    /// <summary>
+    ///     Resets the specific state of the encoding.
+    /// </summary>
     protected virtual void ResetState() { }
 }
