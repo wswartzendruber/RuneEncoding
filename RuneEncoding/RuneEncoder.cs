@@ -104,6 +104,9 @@ public abstract class RuneEncoder : Encoder
     /// </returns>
     protected abstract int WriteBytes(int scalarValue, byte[] bytes, int index);
 
+    /// <summary>
+    ///     Resets the surrogate state of the encoder; any buffered high surrogate is cleared.
+    /// </summary>
     public override void Reset()
     {
         ConvertComposer.Reset();

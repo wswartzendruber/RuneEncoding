@@ -17,6 +17,7 @@ namespace RuneEncoding.Tests;
 public class TestEncoder : RuneEncoder
 {
     public List<int> ByteCounts = new();
+    public List<int> ByteValues = new();
 
     protected override int ByteCount(int scalarValue)
     {
@@ -27,11 +28,14 @@ public class TestEncoder : RuneEncoder
 
     protected override int WriteBytes(int scalarValue, byte[] bytes, int index)
     {
-        return 0;
+        ByteValues.Add(scalarValue);
+
+        return 1;
     }
 
     protected override void ResetState()
     {
         ByteCounts.Clear();
+        ByteValues.Clear();
     }
 }

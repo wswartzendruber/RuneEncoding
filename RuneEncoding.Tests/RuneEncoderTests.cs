@@ -18,7 +18,7 @@ namespace RuneEncoding.Tests;
 public class RuneEncoderTests
 {
     [Fact]
-    public void ByteLengthsValidFlush()
+    public void ByteLengthsAllScalarValuesFlush()
     {
         var totalString = new StringBuilder();
         var encoder = new TestEncoder();
@@ -33,7 +33,7 @@ public class RuneEncoderTests
     }
 
     [Fact]
-    public void ByteLengthsValidNoFlush()
+    public void ByteLengthsAllScalarValuesNoFlush()
     {
         var totalString = new StringBuilder();
         var encoder = new TestEncoder();
@@ -45,78 +45,109 @@ public class RuneEncoderTests
 
         Assert.True(byteCount == Common.AllScalarValues.Count());
         Assert.True(encoder.ByteCounts.SequenceEqual(Common.AllScalarValues));
+    }
+
+    [Fact]
+    public void ByteLengthsInitialLSFlush()
+    {
+        var invalidString = " \uDE00";
+        var composedList = new List<int> { 0x20, 0xFFFD };
+        var encoder = new TestEncoder();
+
+        var byteCount = encoder.GetByteCount(invalidString, true);
+
+        Assert.True(byteCount == 2);
+        Assert.True(encoder.ByteCounts.SequenceEqual(composedList));
+    }
+
+    [Fact]
+    public void ByteLengthsInitialLSNoFlush()
+    {
+        var invalidString = " \uDE00";
+        var composedList = new List<int> { 0x20, 0xFFFD };
+        var encoder = new TestEncoder();
+
+        var byteCount = encoder.GetByteCount(invalidString, false);
+
+        Assert.True(byteCount == 2);
+        Assert.True(encoder.ByteCounts.SequenceEqual(composedList));
+    }
+
+    [Fact]
+    public void ByteLengthsUnfollowedHSThenBMPFlush()
+    {
+        var invalidString = " \uDA00 ";
+        var composedList = new List<int> { 0x20, 0xFFFD, 0x20 };
+        var encoder = new TestEncoder();
+
+        var byteCount = encoder.GetByteCount(invalidString, true);
+
+        Assert.True(byteCount == 3);
+        Assert.True(encoder.ByteCounts.SequenceEqual(composedList));
+    }
+
+    [Fact]
+    public void ByteLengthsUnfollowedHSThenBMPNoFlush()
+    {
+        var invalidString = " \uDA00 ";
+        var composedList = new List<int> { 0x20, 0xFFFD, 0x20 };
+        var encoder = new TestEncoder();
+
+        var byteCount = encoder.GetByteCount(invalidString, false);
+
+        Assert.True(byteCount == 3);
+        Assert.True(encoder.ByteCounts.SequenceEqual(composedList));
+    }
+
+    [Fact]
+    public void ByteLengthsUnfollowedHSThenSMPFlush()
+    {
+        var invalidString = " \uDA00\uD83D\uDE00";
+        var composedList = new List<int> { 0x20, 0xFFFD, 0x1F600 };
+        var encoder = new TestEncoder();
+
+        var byteCount = encoder.GetByteCount(invalidString, true);
+
+        Assert.True(byteCount == 3);
+        Assert.True(encoder.ByteCounts.SequenceEqual(composedList));
+    }
+
+    [Fact]
+    public void ByteLengthsUnfollowedHSThenSMPNoFlush()
+    {
+        var invalidString = " \uDA00\uD83D\uDE00";
+        var composedList = new List<int> { 0x20, 0xFFFD, 0x1F600 };
+        var encoder = new TestEncoder();
+
+        var byteCount = encoder.GetByteCount(invalidString, false);
+
+        Assert.True(byteCount == 3);
+        Assert.True(encoder.ByteCounts.SequenceEqual(composedList));
     }
 
     [Fact]
     public void ByteLengthsTrailingHSFlush()
     {
-        var totalString = new StringBuilder();
+        var invalidString = " \uDA00";
+        var composedList = new List<int> { 0x20, 0xFFFD };
         var encoder = new TestEncoder();
 
-        foreach (int value in Common.AllScalarValues)
-            totalString.Append(char.ConvertFromUtf32(value));
-        totalString.Append('\uD800');
+        var byteCount = encoder.GetByteCount(invalidString, true);
 
-        var byteCount = encoder.GetByteCount(totalString.ToString(), true);
-        var scalarValues = Common.AllScalarValues.ToList();
-
-        scalarValues.Add(0xFFFD);
-
-        Assert.True(byteCount == scalarValues.Count());
-        Assert.True(encoder.ByteCounts.SequenceEqual(scalarValues));
+        Assert.True(byteCount == 2);
+        Assert.True(encoder.ByteCounts.SequenceEqual(composedList));
     }
 
     [Fact]
     public void ByteLengthsTrailingHSNoFlush()
     {
-        var totalString = new StringBuilder();
+        var invalidString = " \uDA00";
+        var composedList = new List<int> { 0x20 };
         var encoder = new TestEncoder();
 
-        foreach (int value in Common.AllScalarValues)
-            totalString.Append(char.ConvertFromUtf32(value));
-        totalString.Append('\uD800');
+        var byteCount = encoder.GetByteCount(invalidString, false);
 
-        var byteCount = encoder.GetByteCount(totalString.ToString(), false);
-
-        Assert.True(byteCount == Common.AllScalarValues.Count());
-        Assert.True(encoder.ByteCounts.SequenceEqual(Common.AllScalarValues));
-    }
-
-    [Fact]
-    public void ByteLengthsTrailingLSFlush()
-    {
-        var totalString = new StringBuilder();
-        var encoder = new TestEncoder();
-
-        foreach (int value in Common.AllScalarValues)
-            totalString.Append(char.ConvertFromUtf32(value));
-        totalString.Append('\uDC00');
-
-        var byteCount = encoder.GetByteCount(totalString.ToString(), true);
-        var scalarValues = Common.AllScalarValues.ToList();
-
-        scalarValues.Add(0xFFFD);
-
-        Assert.True(byteCount == scalarValues.Count());
-        Assert.True(encoder.ByteCounts.SequenceEqual(scalarValues));
-    }
-
-    [Fact]
-    public void ByteLengthsTrailingLSNoFlush()
-    {
-        var totalString = new StringBuilder();
-        var encoder = new TestEncoder();
-
-        foreach (int value in Common.AllScalarValues)
-            totalString.Append(char.ConvertFromUtf32(value));
-        totalString.Append('\uDC00');
-
-        var byteCount = encoder.GetByteCount(totalString.ToString(), false);
-        var scalarValues = Common.AllScalarValues.ToList();
-
-        scalarValues.Add(0xFFFD);
-
-        Assert.True(byteCount == scalarValues.Count());
-        Assert.True(encoder.ByteCounts.SequenceEqual(scalarValues));
+        Assert.True(byteCount == 1);
+        Assert.True(encoder.ByteCounts.SequenceEqual(composedList));
     }
 }
