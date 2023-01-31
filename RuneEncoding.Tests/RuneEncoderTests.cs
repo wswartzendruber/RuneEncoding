@@ -40,6 +40,7 @@ public class RuneEncoderTests
         }
 
         encoder.AssertConsistency();
+        Assert.False(encoder.Pending);
     }
 
     [Fact]
@@ -65,6 +66,7 @@ public class RuneEncoderTests
         }
 
         encoder.AssertConsistency();
+        Assert.False(encoder.Pending);
     }
 
     [Fact]
@@ -80,6 +82,7 @@ public class RuneEncoderTests
         encoder.GetBytes(invalidString, buffer, true);
 
         encoder.AssertConsistency();
+        Assert.False(encoder.Pending);
         Assert.True(encoder.EncodeValues.SequenceEqual(composedList));
     }
 
@@ -96,6 +99,7 @@ public class RuneEncoderTests
         encoder.GetBytes(invalidString, buffer, false);
 
         encoder.AssertConsistency();
+        Assert.True(encoder.Pending);
         Assert.True(encoder.EncodeValues.SequenceEqual(composedList));
     }
 
@@ -112,6 +116,7 @@ public class RuneEncoderTests
         encoder.GetBytes(invalidString, buffer, true);
 
         encoder.AssertConsistency();
+        Assert.False(encoder.Pending);
         Assert.True(encoder.EncodeValues.SequenceEqual(composedList));
     }
 
@@ -128,6 +133,7 @@ public class RuneEncoderTests
         encoder.GetBytes(invalidString, buffer, false);
 
         encoder.AssertConsistency();
+        Assert.True(encoder.Pending);
         Assert.True(encoder.EncodeValues.SequenceEqual(composedList));
     }
 
@@ -144,6 +150,7 @@ public class RuneEncoderTests
         encoder.GetBytes(invalidString, buffer, true);
 
         encoder.AssertConsistency();
+        Assert.False(encoder.Pending);
         Assert.True(encoder.EncodeValues.SequenceEqual(composedList));
     }
 
@@ -160,6 +167,7 @@ public class RuneEncoderTests
         encoder.GetBytes(invalidString, buffer, false);
 
         encoder.AssertConsistency();
+        Assert.False(encoder.Pending);
         Assert.True(encoder.EncodeValues.SequenceEqual(composedList));
     }
 }

@@ -23,6 +23,20 @@ public abstract class RuneEncoder : Encoder
 {
     private char? HighSurrogate = null;
 
+    /// <summary>
+    ///     Gets whether or not a pending high surrogate is buffered in the encoder's state.
+    /// </summary>
+    /// <returns>
+    ///     Whether or not a pending high surrogate is buffered in the encoder's state.
+    /// </returns>
+    public bool Pending
+    {
+        get
+        {
+            return HighSurrogate != null;
+        }
+    }
+
     public override int GetByteCount(char[] chars, int index, int count, bool flush)
     {
         var returnValue = 0;
