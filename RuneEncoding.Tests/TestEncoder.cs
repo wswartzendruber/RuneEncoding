@@ -10,32 +10,73 @@
  * SPDX-License-Identifier: CC0-1.0
  */
 
+using System.IO;
+using System.Security.Cryptography;
 using RuneEncoding;
 
 namespace RuneEncoding.Tests;
 
 public class TestEncoder : RuneEncoder
 {
-    public List<int> ByteCounts = new();
-    public List<int> ByteValues = new();
+    public byte[]? CurrentBuffer;
+    public int ExpectedIndex;
+    public long CountState;
+    public long EncodeState;
+    public List<int> CountValues = new();
+    public List<int> EncodeValues = new();
+    public List<int> CountIncrements = new();
+    public List<int> EncodeIncrements = new();
+
+    public void AssertConsistency()
+    {
+        if (!CountValues.SequenceEqual(EncodeValues))
+            throw new InvalidOperationException("CountValues != EncodeValues");
+        if (!CountIncrements.SequenceEqual(EncodeIncrements))
+            throw new InvalidOperationException("CountIncrements != EncodeIncrements");
+    }
 
     protected override int ByteCount(int scalarValue)
     {
-        ByteCounts.Add(scalarValue);
+        var increment = scalarValue % 4;
 
-        return 1;
+        CountValues.Add(scalarValue);
+        CountIncrements.Add(increment);
+
+        return increment;
     }
 
     protected override int WriteBytes(int scalarValue, byte[] bytes, int index)
     {
-        ByteValues.Add(scalarValue);
+        if (bytes == CurrentBuffer)
+        {
+            if (index != ExpectedIndex)
+                throw new InvalidOperationException("Provided index and ExpectedIndex differ.");
+        }
+        else
+        {
+            CurrentBuffer = bytes;
+            ExpectedIndex = index;
+        }
 
-        return 1;
+        var increment = scalarValue % 4;
+
+        EncodeValues.Add(scalarValue);
+        EncodeIncrements.Add(increment);
+
+        ExpectedIndex += increment;
+
+        return increment;
     }
 
     protected override void ResetState()
     {
-        ByteCounts.Clear();
-        ByteValues.Clear();
+        CurrentBuffer = null;
+        ExpectedIndex = 0;
+        CountState = 0;
+        EncodeState = 0;
+        CountValues.Clear();
+        EncodeValues.Clear();
+        CountIncrements.Clear();
+        EncodeIncrements.Clear();
     }
 }

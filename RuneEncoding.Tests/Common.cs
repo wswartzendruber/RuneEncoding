@@ -10,9 +10,14 @@
  * SPDX-License-Identifier: CC0-1.0
  */
 
+using System.Text;
+
+namespace RuneEncoding.Tests;
+
 public static class Common
 {
     public static readonly List<int> AllScalarValues;
+    public static readonly string All;
 
     static Common()
     {
@@ -24,5 +29,12 @@ public static class Common
             AllScalarValues.Add(value);
         for (int value = 0x010000; value <= 0x10FFFF; value++)
             AllScalarValues.Add(value);
+
+        var stringBuilder = new StringBuilder();
+
+        foreach (int value in AllScalarValues)
+            stringBuilder.Append(char.ConvertFromUtf32(value));
+
+        All = stringBuilder.ToString();
     }
 }

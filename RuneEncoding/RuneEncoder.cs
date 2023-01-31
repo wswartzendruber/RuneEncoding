@@ -10,6 +10,7 @@
  * SPDX-License-Identifier: CC0-1.0
  */
 
+using System;
 using System.Text;
 
 namespace RuneEncoding;
@@ -20,28 +21,56 @@ namespace RuneEncoding;
 /// </summary>
 public abstract class RuneEncoder : Encoder
 {
-    private readonly SurrogateComposer ConvertComposer = new();
-    private readonly SurrogateComposer CountComposer = new();
+    private char? HighSurrogate = null;
 
     public override int GetByteCount(char[] chars, int index, int count, bool flush)
     {
         var returnValue = 0;
         var end = index + count;
-        var callback = delegate(int value)
-        {
-            returnValue += ByteCount(value);
-        };
-
-        CountComposer.Reset();
-
-        if (ConvertComposer.HighSurrogate is char highSurrogate)
-            CountComposer.Input(highSurrogate, callback);
+        char? highSurrogate = HighSurrogate;
 
         for (int i = index; i < end; i++)
-            CountComposer.Input(chars[i], callback);
+        {
+            char value = chars[i];
 
-        if (flush == true)
-            CountComposer.Flush(callback);
+            if (highSurrogate is char _highSurrogate)
+            {
+                if (char.IsLowSurrogate(value))
+                {
+                    returnValue += ByteCount(char.ConvertToUtf32(_highSurrogate, value));
+                    highSurrogate = null;
+                }
+                else if (!char.IsSurrogate(value))
+                {
+                    returnValue += ByteCount(Constants.ReplacementCode);
+                    highSurrogate = null;
+                    returnValue += ByteCount(value);
+                }
+                else if (char.IsHighSurrogate(value))
+                {
+                    returnValue += ByteCount(Constants.ReplacementCode);
+                    highSurrogate = value;
+                }
+                else
+                {
+                    throw new InvalidOperationException("Internal state is irrational.");
+                }
+            }
+            else
+            {
+                if (!char.IsSurrogate(value))
+                    returnValue += ByteCount(value);
+                else if (char.IsHighSurrogate(value))
+                    highSurrogate = value;
+                else if (char.IsLowSurrogate(value))
+                    returnValue += ByteCount(Constants.ReplacementCode);
+                else
+                    throw new InvalidOperationException("Internal state is irrational.");
+            }
+        }
+
+        if (flush == true && highSurrogate is not null)
+            returnValue += ByteCount(Constants.ReplacementCode);
 
         return returnValue;
     }
@@ -49,20 +78,68 @@ public abstract class RuneEncoder : Encoder
     public override int GetBytes(char[] chars, int charIndex, int charCount, byte[] bytes
         , int byteIndex, bool flush)
     {
-        var startByteIndex = byteIndex;
+        var currentByteIndex = byteIndex;
         var charEnd = charIndex + charCount;
-        var callback = delegate(int value)
+
+        for (int i = charIndex; i < charEnd; i++)
         {
-            byteIndex += WriteBytes(value, bytes, byteIndex);
-        };
+            char value = chars[i];
 
-        for (int i = charIndex; i < charEnd; charIndex++)
-            ConvertComposer.Input(chars[i], callback);
+            if (HighSurrogate is char highSurrogate)
+            {
+                if (char.IsLowSurrogate(value))
+                {
+                    currentByteIndex += WriteBytes(char.ConvertToUtf32(highSurrogate, value)
+                        , bytes, currentByteIndex);
+                    HighSurrogate = null;
+                }
+                else if (!char.IsSurrogate(value))
+                {
+                    currentByteIndex += WriteBytes(Constants.ReplacementCode
+                        , bytes, currentByteIndex);
+                    HighSurrogate = null;
+                    currentByteIndex += WriteBytes(value, bytes, currentByteIndex);
+                }
+                else if (char.IsHighSurrogate(value))
+                {
+                    currentByteIndex += WriteBytes(Constants.ReplacementCode
+                        , bytes, currentByteIndex);
+                    HighSurrogate = value;
+                }
+                else
+                {
+                    throw new InvalidOperationException("Internal state is irrational.");
+                }
+            }
+            else
+            {
+                if (!char.IsSurrogate(value))
+                {
+                    currentByteIndex += WriteBytes(value, bytes, currentByteIndex);
+                }
+                else if (char.IsHighSurrogate(value))
+                {
+                    HighSurrogate = value;
+                }
+                else if (char.IsLowSurrogate(value))
+                {
+                    currentByteIndex += WriteBytes(Constants.ReplacementCode
+                        , bytes, currentByteIndex);
+                }
+                else
+                {
+                    throw new InvalidOperationException("Internal state is irrational.");
+                }
+            }
+        }
 
-        if (flush == true)
-            ConvertComposer.Flush(callback);
+        if (flush == true && HighSurrogate is not null)
+        {
+            currentByteIndex += WriteBytes(Constants.ReplacementCode, bytes, currentByteIndex);
+            HighSurrogate = null;
+        }
 
-        return byteIndex - startByteIndex;
+        return currentByteIndex - byteIndex;
     }
 
     /// <summary>
@@ -109,7 +186,7 @@ public abstract class RuneEncoder : Encoder
     /// </summary>
     public override void Reset()
     {
-        ConvertComposer.Reset();
+        HighSurrogate = null;
         ResetState();
     }
 
