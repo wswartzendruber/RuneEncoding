@@ -208,4 +208,73 @@ public abstract class RuneEncoder : Encoder
     ///     Resets the specific state of the encoding.
     /// </summary>
     protected virtual void ResetState() { }
+
+    private int WriteFallbackBytes(char charValue, int charIndex, byte[] bytes, int byteIndex)
+    {
+        var currentByteIndex = byteIndex;
+        var fallbackBuffer = Fallback?.CreateFallbackBuffer();
+
+        if (fallbackBuffer is null)
+        {
+            currentByteIndex += WriteBytes(Constants.ReplacementCode, bytes, currentByteIndex);
+        }
+        else if (fallbackBuffer.Fallback(charValue, charIndex))
+        {
+            char? highSurrogate = null;
+
+            while (fallbackBuffer.Remaining > 0)
+            {
+                char value = fallbackBuffer.GetNextChar();
+
+                if (highSurrogate is char _highSurrogate)
+                {
+                    if (char.IsLowSurrogate(value))
+                    {
+                        currentByteIndex += WriteBytes(char.ConvertToUtf32(_highSurrogate
+                            , value), bytes, currentByteIndex);
+                        highSurrogate = null;
+                    }
+                    else if (!char.IsSurrogate(value))
+                    {
+                        currentByteIndex += WriteBytes(Constants.ReplacementCode, bytes
+                            , currentByteIndex);
+                        highSurrogate = null;
+                        currentByteIndex += WriteBytes(value, bytes, currentByteIndex);
+                    }
+                    else if (char.IsHighSurrogate(value))
+                    {
+                        currentByteIndex += WriteBytes(Constants.ReplacementCode
+                            , bytes, currentByteIndex);
+                        highSurrogate = value;
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Internal state is irrational.");
+                    }
+                }
+                else
+                {
+                    if (!char.IsSurrogate(value))
+                    {
+                        currentByteIndex += WriteBytes(value, bytes, currentByteIndex);
+                    }
+                    else if (char.IsHighSurrogate(value))
+                    {
+                        highSurrogate = value;
+                    }
+                    else if (char.IsLowSurrogate(value))
+                    {
+                        currentByteIndex += WriteBytes(Constants.ReplacementCode, bytes
+                            , currentByteIndex);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Internal state is irrational.");
+                    }
+                }
+            }
+        }
+
+        return currentByteIndex - byteIndex;
+    }
 }
