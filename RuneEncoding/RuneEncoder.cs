@@ -47,22 +47,22 @@ public abstract class RuneEncoder : Encoder
         {
             char value = chars[i];
 
-            if (highSurrogate is char _highSurrogate)
+            if (highSurrogate is char highSurrogateValue)
             {
                 if (char.IsLowSurrogate(value))
                 {
-                    returnValue += ByteCount(char.ConvertToUtf32(_highSurrogate, value));
+                    returnValue += ByteCount(char.ConvertToUtf32(highSurrogateValue, value));
                     highSurrogate = null;
                 }
                 else if (!char.IsSurrogate(value))
                 {
-                    returnValue += ByteCount(Constants.ReplacementCode);
+                    returnValue += FallbackByteCount(highSurrogateValue, i);
                     highSurrogate = null;
                     returnValue += ByteCount(value);
                 }
                 else if (char.IsHighSurrogate(value))
                 {
-                    returnValue += ByteCount(Constants.ReplacementCode);
+                    returnValue += FallbackByteCount(highSurrogateValue, i);
                     highSurrogate = value;
                 }
                 else
@@ -77,14 +77,14 @@ public abstract class RuneEncoder : Encoder
                 else if (char.IsHighSurrogate(value))
                     highSurrogate = value;
                 else if (char.IsLowSurrogate(value))
-                    returnValue += ByteCount(Constants.ReplacementCode);
+                    returnValue += FallbackByteCount(value, i);
                 else
                     throw new InvalidOperationException("Internal state is irrational.");
             }
         }
 
-        if (flush == true && highSurrogate is not null)
-            returnValue += ByteCount(Constants.ReplacementCode);
+        if (flush == true && highSurrogate is char highSurrogateValue_)
+            returnValue += FallbackByteCount(highSurrogateValue_, end);
 
         return returnValue;
     }
@@ -99,25 +99,25 @@ public abstract class RuneEncoder : Encoder
         {
             char value = chars[i];
 
-            if (HighSurrogate is char highSurrogate)
+            if (HighSurrogate is char highSurrogateValue)
             {
                 if (char.IsLowSurrogate(value))
                 {
-                    currentByteIndex += WriteBytes(char.ConvertToUtf32(highSurrogate, value)
-                        , bytes, currentByteIndex);
+                    currentByteIndex += WriteBytes(char.ConvertToUtf32(highSurrogateValue
+                        , value), bytes, currentByteIndex);
                     HighSurrogate = null;
                 }
                 else if (!char.IsSurrogate(value))
                 {
-                    currentByteIndex += WriteBytes(Constants.ReplacementCode
-                        , bytes, currentByteIndex);
+                    currentByteIndex += WriteFallbackBytes(highSurrogateValue, charIndex, bytes
+                        , currentByteIndex);
                     HighSurrogate = null;
                     currentByteIndex += WriteBytes(value, bytes, currentByteIndex);
                 }
                 else if (char.IsHighSurrogate(value))
                 {
-                    currentByteIndex += WriteBytes(Constants.ReplacementCode
-                        , bytes, currentByteIndex);
+                    currentByteIndex += WriteFallbackBytes(highSurrogateValue, charIndex, bytes
+                        , currentByteIndex);
                     HighSurrogate = value;
                 }
                 else
@@ -137,8 +137,8 @@ public abstract class RuneEncoder : Encoder
                 }
                 else if (char.IsLowSurrogate(value))
                 {
-                    currentByteIndex += WriteBytes(Constants.ReplacementCode
-                        , bytes, currentByteIndex);
+                    currentByteIndex += WriteFallbackBytes(value, charIndex, bytes
+                        , currentByteIndex);
                 }
                 else
                 {
@@ -147,9 +147,10 @@ public abstract class RuneEncoder : Encoder
             }
         }
 
-        if (flush == true && HighSurrogate is not null)
+        if (flush == true && HighSurrogate is char highSurrogateValue_)
         {
-            currentByteIndex += WriteBytes(Constants.ReplacementCode, bytes, currentByteIndex);
+            currentByteIndex += WriteFallbackBytes(highSurrogateValue_, charEnd, bytes
+                , currentByteIndex);
             HighSurrogate = null;
         }
 
@@ -208,6 +209,64 @@ public abstract class RuneEncoder : Encoder
     ///     Resets the specific state of the encoding.
     /// </summary>
     protected virtual void ResetState() { }
+
+    private int FallbackByteCount(char charValue, int charIndex)
+    {
+        var returnValue = 0;
+        var fallbackBuffer = Fallback?.CreateFallbackBuffer();
+
+        if (fallbackBuffer is null)
+        {
+            returnValue += ByteCount(Constants.ReplacementCode);
+        }
+        else if (fallbackBuffer.Fallback(charValue, charIndex))
+        {
+            char? highSurrogate = null;
+
+            while (fallbackBuffer.Remaining > 0)
+            {
+                char value = fallbackBuffer.GetNextChar();
+
+                if (highSurrogate is char _highSurrogate)
+                {
+                    if (char.IsLowSurrogate(value))
+                    {
+                        returnValue += ByteCount(char.ConvertToUtf32(_highSurrogate
+                            , value));
+                        highSurrogate = null;
+                    }
+                    else if (!char.IsSurrogate(value))
+                    {
+                        returnValue += ByteCount(Constants.ReplacementCode);
+                        highSurrogate = null;
+                        returnValue += ByteCount(value);
+                    }
+                    else if (char.IsHighSurrogate(value))
+                    {
+                        returnValue += ByteCount(Constants.ReplacementCode);
+                        highSurrogate = value;
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Internal state is irrational.");
+                    }
+                }
+                else
+                {
+                    if (!char.IsSurrogate(value))
+                        returnValue += ByteCount(value);
+                    else if (char.IsHighSurrogate(value))
+                        returnValue = value;
+                    else if (char.IsLowSurrogate(value))
+                        returnValue += ByteCount(Constants.ReplacementCode);
+                    else
+                        throw new InvalidOperationException("Internal state is irrational.");
+                }
+            }
+        }
+
+        return returnValue;
+    }
 
     private int WriteFallbackBytes(char charValue, int charIndex, byte[] bytes, int byteIndex)
     {
