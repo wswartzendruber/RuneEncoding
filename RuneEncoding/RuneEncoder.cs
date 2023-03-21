@@ -227,11 +227,11 @@ public abstract class RuneEncoder : Encoder
             {
                 char value = fallbackBuffer.GetNextChar();
 
-                if (highSurrogate is char _highSurrogate)
+                if (highSurrogate is char highSurrogateValue)
                 {
                     if (char.IsLowSurrogate(value))
                     {
-                        returnValue += ByteCount(char.ConvertToUtf32(_highSurrogate
+                        returnValue += ByteCount(char.ConvertToUtf32(highSurrogateValue
                             , value));
                         highSurrogate = null;
                     }
@@ -256,13 +256,16 @@ public abstract class RuneEncoder : Encoder
                     if (!char.IsSurrogate(value))
                         returnValue += ByteCount(value);
                     else if (char.IsHighSurrogate(value))
-                        returnValue = value;
+                        highSurrogate = value;
                     else if (char.IsLowSurrogate(value))
                         returnValue += ByteCount(Constants.ReplacementCode);
                     else
                         throw new InvalidOperationException("Internal state is irrational.");
                 }
             }
+
+            if (highSurrogate is not null)
+                returnValue += ByteCount(Constants.ReplacementCode);
         }
 
         return returnValue;
@@ -285,11 +288,11 @@ public abstract class RuneEncoder : Encoder
             {
                 char value = fallbackBuffer.GetNextChar();
 
-                if (highSurrogate is char _highSurrogate)
+                if (highSurrogate is char highSurrogateValue)
                 {
                     if (char.IsLowSurrogate(value))
                     {
-                        currentByteIndex += WriteBytes(char.ConvertToUtf32(_highSurrogate
+                        currentByteIndex += WriteBytes(char.ConvertToUtf32(highSurrogateValue
                             , value), bytes, currentByteIndex);
                         highSurrogate = null;
                     }
@@ -331,6 +334,12 @@ public abstract class RuneEncoder : Encoder
                         throw new InvalidOperationException("Internal state is irrational.");
                     }
                 }
+            }
+
+            if (highSurrogate is not null)
+            {
+                currentByteIndex += WriteBytes(Constants.ReplacementCode, bytes
+                    , currentByteIndex);
             }
         }
 

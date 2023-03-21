@@ -17,56 +17,132 @@ namespace RuneEncoding.Tests;
 
 public class RuneEncoderTests
 {
+    private readonly byte[] EmptyBuffer = new byte[0];
+
     [Fact]
-    public void AllScalarValuesFlush()
+    public void AllCodePointsTransformFallback()
     {
-        var stringBuilder = new StringBuilder();
-        var scalarValues = new Queue<char>(Common.All);
         var encoder = new TestEncoder();
 
-        for (int i = 0; i < Common.All.Length && scalarValues.Count > 0; i++)
+        encoder.Fallback = new TransformTestEncoderFallback();
+
+        for (int value = 0x0000; value <= 0xFFFF; value++)
         {
-            var count = i % 16;
+            var chars = new char[] { (char)value };
 
-            for (int c = 0; c < count && scalarValues.Count > 0; c++)
-                stringBuilder.Append(scalarValues.Dequeue());
+            encoder.GetByteCount(chars, true);
+            encoder.GetBytes(chars, EmptyBuffer, true);
+        }
+        for (int value = 0x010000; value <= 0x10FFFF; value++)
+        {
+            var chars = char.ConvertFromUtf32(value);
 
-            var values = stringBuilder.ToString();
-            var byteCount = encoder.GetByteCount(values, true);
-            var buffer = new byte[byteCount];
-
-            encoder.GetBytes(values, buffer, true);
-            stringBuilder.Clear();
+            encoder.GetByteCount(chars, true);
+            encoder.GetBytes(chars, EmptyBuffer, true);
         }
 
         encoder.AssertConsistency();
-        Assert.False(encoder.Pending);
+
+        for (int index = 0x0000; index <= 0xD7FF; index++)
+            Assert.True(encoder.EncodeValues[index] == index);
+        for (int index = 0xD800; index <= 0xDFFF; index++)
+            Assert.True(encoder.EncodeValues[index] == index >> 8);
+        for (int index = 0xE000; index <= 0x10FFFF; index++)
+            Assert.True(encoder.EncodeValues[index] == index);
+
+        encoder.Reset();
     }
 
     [Fact]
-    public void AllScalarValuesNoFlush()
+    public void AllCodePointsPassthruFallback()
     {
-        var stringBuilder = new StringBuilder();
-        var scalarValues = new Queue<char>(Common.All);
         var encoder = new TestEncoder();
+        var random = new Random(29_749_555);
 
-        for (int i = 0; i < Common.All.Length && scalarValues.Count > 0; i++)
+        encoder.Fallback = new PassthruTestEncoderFallback();
+
+        for (int value = 0x0000; value <= 0xD7FF; value++)
         {
-            var count = i % 16;
+            var chars = new char[] { (char)value };
 
-            for (int c = 0; c < count && scalarValues.Count > 0; c++)
-                stringBuilder.Append(scalarValues.Dequeue());
+            encoder.GetByteCount(chars, true);
+            encoder.GetBytes(chars, EmptyBuffer, true);
+        }
+        for (int value = 0xD800; value <= 0xDFFF; value++)
+        {
+            var chars = new char[] { (char)(0xD800 + random.Next(0x800)) };
 
-            var values = stringBuilder.ToString();
-            var byteCount = encoder.GetByteCount(values, false);
-            var buffer = new byte[byteCount];
+            encoder.GetByteCount(chars, true);
+            encoder.GetBytes(chars, EmptyBuffer, true);
+        }
+        for (int value = 0xE000; value <= 0xFFFF; value++)
+        {
+            var chars = new char[] { (char)value };
 
-            encoder.GetBytes(values, buffer, false);
-            stringBuilder.Clear();
+            encoder.GetByteCount(chars, true);
+            encoder.GetBytes(chars, EmptyBuffer, true);
+        }
+        for (int value = 0x010000; value <= 0x10FFFF; value++)
+        {
+            var chars = char.ConvertFromUtf32(value);
+
+            encoder.GetByteCount(chars, true);
+            encoder.GetBytes(chars, EmptyBuffer, true);
         }
 
         encoder.AssertConsistency();
-        Assert.False(encoder.Pending);
+
+        for (int index = 0x0000; index <= 0xD7FF; index++)
+            Assert.True(encoder.EncodeValues[index] == index);
+        for (int index = 0xD800; index <= 0xDFFF; index++)
+            Assert.True(encoder.EncodeValues[index] == 0xFFFD);
+        for (int index = 0xE000; index <= 0x10FFFF; index++)
+            Assert.True(encoder.EncodeValues[index] == index);
+
+        encoder.Reset();
+    }
+
+    [Fact]
+    public void AllCodePointsCompoundFallback()
+    {
+        var encoder = new TestEncoder();
+
+        encoder.Fallback = new CompoundTestEncoderFallback();
+
+        for (int value = 0x0000; value <= 0xFFFF; value++)
+        {
+            var chars = new char[] { (char)value };
+
+            encoder.GetByteCount(chars, true);
+            encoder.GetBytes(chars, EmptyBuffer, true);
+        }
+        for (int value = 0x010000; value <= 0x10FFFF; value++)
+        {
+            var chars = char.ConvertFromUtf32(value);
+
+            encoder.GetByteCount(chars, true);
+            encoder.GetBytes(chars, EmptyBuffer, true);
+        }
+
+        encoder.AssertConsistency();
+
+        for (int index = 0x0000; index <= 0xD7FF; index++)
+        {
+            Assert.True(encoder.EncodeValues[index] == index);
+        }
+        for (int index = 0xD800; index <= 0xDFFF; index++)
+        {
+            var char1 = (char)(0xD800 | (index >> 8));
+            var char2 = (char)(0xDC00 | (index & 0xFF));
+
+            Assert.True(encoder.EncodeValues[index] == char.ConvertToUtf32(char1, char2));
+        }
+        for (int index = 0xE000; index <= 0x10FFFF; index++)
+        {
+            Assert.True(encoder.EncodeValues[index] == index);
+        }
+
+        encoder.Reset();
     }
 
     [Fact]
