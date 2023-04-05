@@ -29,6 +29,43 @@ public abstract class RuneDecoder : Decoder
     public override int GetChars(byte[] bytes, int byteIndex, int byteCount, char[] chars
         , int charIndex)
     {
-        return  0;
+        int byteEnd = byteIndex + byteCount;
+        int lastByteIndex = byteIndex;
+        int currentByteIndex = byteIndex;
+        int currentCharIndex = charIndex;
+
+        while (currentByteIndex < byteEnd)
+        {
+            int scalarValue;
+
+            currentByteIndex += ReadScalarValue(bytes, currentByteIndex, out scalarValue);
+
+            if ((0 <= scalarValue && scalarValue <= 0xD7FF)
+                || (0xE000 <= scalarValue && scalarValue <= 0xFFFF))
+            {
+                chars[currentCharIndex++] = (char)scalarValue;
+            }
+            else if (0x010000 <= scalarValue && scalarValue <= 0x10FFFF)
+            {
+                chars[currentCharIndex++] = HighSurrogate(scalarValue);
+                chars[currentCharIndex++] = LowSurrogate(scalarValue);
+            }
+            else
+            {
+                throw new NotImplementedException("DecoderFallback not handled yet.");
+            }
+
+            lastByteIndex = currentByteIndex;
+        }
+
+        return currentCharIndex - charIndex;
     }
+
+    protected abstract int ReadScalarValue(byte[] bytes, int byteIndex, out int scalarValue);
+
+    private static char HighSurrogate(int scalarValue) =>
+        (char)((((uint)scalarValue - 0x10000U) >> 10) + 0xD800);
+
+    private static char LowSurrogate(int scalarValue) =>
+        (char)(((scalarValue - 0x10000) & 0x3FF) + 0xDC00);
 }
