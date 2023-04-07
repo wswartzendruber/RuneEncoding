@@ -23,7 +23,19 @@ public abstract class RuneDecoder : Decoder
 {
     public override int GetCharCount(byte[] bytes, int index, int count)
     {
-        return 0;
+        var returnValue = 0;
+        var end = index + count;
+        var currentIndex = index;
+
+        while (currentIndex < end)
+        {
+            bool isBasic;
+
+            currentIndex += IsScalarValueBasic(bytes, currentIndex, out isBasic);
+            returnValue += (isBasic == true) ? 1 : 2;
+        }
+
+        return returnValue;
     }
 
     public override int GetChars(byte[] bytes, int byteIndex, int byteCount, char[] chars
@@ -59,6 +71,28 @@ public abstract class RuneDecoder : Decoder
         }
 
         return currentCharIndex - charIndex;
+    }
+
+    protected virtual int IsScalarValueBasic(byte[] bytes, int byteIndex, out bool isBasic)
+    {
+        int scalarValue;
+        int bytesRead = ReadScalarValue(bytes, byteIndex, out scalarValue);
+
+        if ((0 <= scalarValue && scalarValue <= 0xD7FF)
+            || (0xE000 <= scalarValue && scalarValue <= 0xFFFF))
+        {
+            isBasic = true;
+        }
+        else if (0x010000 <= scalarValue && scalarValue <= 0x10FFFF)
+        {
+            isBasic = false;
+        }
+        else
+        {
+            throw new NotImplementedException("DecoderFallback not handled yet.");
+        }
+
+        return bytesRead;
     }
 
     protected abstract int ReadScalarValue(byte[] bytes, int byteIndex, out int scalarValue);
