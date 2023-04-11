@@ -15,7 +15,7 @@ using System.Text;
 
 namespace RuneEncoding;
 
-/// <summmary>
+/// <summary>
 ///     Automatically handles the common aspects of character encoding, such as surrogate
 ///     composition, thereby allowing implementers to worry about specific concerns only.
 /// </summary>
@@ -37,6 +37,21 @@ public abstract class RuneEncoder : Encoder
         }
     }
 
+    /// <summary>
+    ///     Encodes a set of characters from the specified character array and any characters in
+    ///     the internal buffer into the specified byte array. A parameter indicates whether to
+    ///     clear the internal state of the encoder after the conversion.
+    /// </summary>
+    /// <param name="chars">
+    /// </param>
+    /// <param name="index">
+    /// </param>
+    /// <param name="count">
+    /// </param>
+    /// <param name="flush">
+    /// </param>
+    /// <returns>
+    /// </returns>
     public override int GetByteCount(char[] chars, int index, int count, bool flush)
     {
         var returnValue = 0;
