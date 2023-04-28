@@ -38,19 +38,26 @@ public abstract class RuneEncoder : Encoder
     }
 
     /// <summary>
-    ///     Encodes a set of characters from the specified character array and any characters in
-    ///     the internal buffer into the specified byte array. A parameter indicates whether to
-    ///     clear the internal state of the encoder after the conversion.
+    ///     Calculates the number of bytes produced by encoding a set of characters from the
+    ///     specified character array. A parameter indicates whether to flush any trailing high
+    ///     surrogate as an encoding error.
     /// </summary>
     /// <param name="chars">
+    ///     The character array containing the set of characters to encode.
     /// </param>
     /// <param name="index">
+    ///     The index of the first character to encode.
     /// </param>
     /// <param name="count">
+    ///     The number of characters to encode.
     /// </param>
     /// <param name="flush">
+    ///     <pre>true</pre> to simulate flushing any trailing high surrogate as an encoding
+    ///     error; otherwise, <pre>false</pre>.
     /// </param>
     /// <returns>
+    ///     The number of bytes produced by encoding the specified characters and any characters
+    ///     in the internal buffer.
     /// </returns>
     public override int GetByteCount(char[] chars, int index, int count, bool flush)
     {
@@ -104,6 +111,33 @@ public abstract class RuneEncoder : Encoder
         return returnValue;
     }
 
+    /// <summary>
+    ///     Encodes any pending high surrogate in the encoder's state followed by a set of
+    ///     characters from the specified character array. A parameter indicates whether to
+    ///     flush any trailing high surrogate as an encoding error.
+    /// </summary>
+    /// <param name="chars">
+    ///     The character array containing the set of characters to encode.
+    /// </param>
+    /// <param name="charIndex">
+    ///     The index of the first character to encode.
+    /// </param>
+    /// <param name="charCount">
+    ///     The number of characters to encode.
+    /// </param>
+    /// <param name="bytes">
+    ///     The byte array to contain the resulting sequence of bytes.
+    /// </param>
+    /// <param name="byteIndex">
+    ///     The index at which to start writing the resulting sequence of bytes.
+    /// </param>
+    /// <param name="flush">
+    ///     <pre>true</pre> to flush any trailing high surrogate as an encoding error;
+    ///     otherwise, <pre>false</pre>.
+    /// </param>
+    /// <returns>
+    ///     The actual number of bytes written into <pre>bytes</pre>.
+    /// </returns>
     public override int GetBytes(char[] chars, int charIndex, int charCount, byte[] bytes
         , int byteIndex, bool flush)
     {
@@ -205,7 +239,9 @@ public abstract class RuneEncoder : Encoder
     ///     The provided byte array to encode to, which is assumed to be large enough to
     ///     accomodate the complete byte encoding of the scalar value.
     /// </param>
-    /// <param name="index">The offset within the byte array to encode at.</param>
+    /// <param name="index">
+    ///     The offset within the byte array to encode at.
+    /// </param>
     /// <returns>
     ///     The number of bytes used to encode the specified Unicode scalar value.
     /// </returns>
