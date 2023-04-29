@@ -15,12 +15,29 @@ using System.Text;
 
 namespace RuneEncoding;
 
-/// <summmary>
+/// <summary>
 ///     Automatically handles the common aspects of character decoding, such as surrogate
 ///     decomposition, thereby allowing implementers to worry about specific concerns only.
 /// </summary>
 public abstract class RuneDecoder : Decoder
 {
+    /// <summary>
+    ///     Calculates the number of characters produced by decoding a sequence of bytes from
+    ///     the specified byte array.
+    /// </summary>
+    /// <param name="bytes">
+    ///     The byte array containing the sequence of bytes to decode.
+    /// </param>
+    /// <param name="index">
+    ///     The index of the first byte to decode.
+    /// </param>
+    /// <param name="count">
+    ///     The number of bytes to decode.
+    /// </param>
+    /// <returns>
+    ///     The number of characters produced by decoding the specified sequence of bytes and
+    ///     any bytes in the internal buffer.
+    /// </returns>
     public override int GetCharCount(byte[] bytes, int index, int count)
     {
         var returnValue = 0;
@@ -29,15 +46,39 @@ public abstract class RuneDecoder : Decoder
 
         while (currentIndex < end)
         {
-            bool isBasic;
+            bool? isBasic;
 
-            currentIndex += IsScalarValueBasic(bytes, currentIndex, out isBasic);
-            returnValue += (isBasic == true) ? 1 : 2;
+            currentIndex += IsScalarValueBasic(bytes, currentIndex, count, out isBasic);
+
+            if (isBasic is not null)
+                returnValue += (isBasic == true) ? 1 : 2;
         }
 
         return returnValue;
     }
 
+    /// <summary>
+    ///     Decodes a sequence of bytes from the specified byte array and any bytes in the
+    ///     internal buffer into the specified character array.
+    /// </summary>
+    /// <param name="bytes">
+    ///     The byte array containing the sequence of bytes to decode.
+    /// </param>
+    /// <param name="byteIndex">
+    ///     The index of the first byte to decode.
+    /// </param>
+    /// <param name="byteCount">
+    ///     The number of bytes to decode.
+    /// </param>
+    /// <param name="chars">
+    ///     The character array to contain the resulting set of characters.
+    /// </param>
+    /// <param name="charIndex">
+    ///     The index at which to start writing the resulting set of characters.
+    /// </param>
+    /// <returns>
+    ///     The actual number of characters written into <pre>chars</pre>.
+    /// </returns>
     public override int GetChars(byte[] bytes, int byteIndex, int byteCount, char[] chars
         , int charIndex)
     {
@@ -48,23 +89,27 @@ public abstract class RuneDecoder : Decoder
 
         while (currentByteIndex < byteEnd)
         {
-            int scalarValue;
+            int? scalarValue;
 
-            currentByteIndex += ReadScalarValue(bytes, currentByteIndex, out scalarValue);
+            currentByteIndex += ReadScalarValue(bytes, currentByteIndex, byteCount
+                , out scalarValue);
 
-            if ((0 <= scalarValue && scalarValue <= 0xD7FF)
-                || (0xE000 <= scalarValue && scalarValue <= 0xFFFF))
+            if (scalarValue is int _scalarValue)
             {
-                chars[currentCharIndex++] = (char)scalarValue;
-            }
-            else if (0x010000 <= scalarValue && scalarValue <= 0x10FFFF)
-            {
-                chars[currentCharIndex++] = HighSurrogate(scalarValue);
-                chars[currentCharIndex++] = LowSurrogate(scalarValue);
-            }
-            else
-            {
-                throw new NotImplementedException("DecoderFallback not handled yet.");
+                if ((0 <= _scalarValue && _scalarValue <= 0xD7FF)
+                    || (0xE000 <= _scalarValue && _scalarValue <= 0xFFFF))
+                {
+                    chars[currentCharIndex++] = (char)_scalarValue;
+                }
+                else if (0x010000 <= scalarValue && scalarValue <= 0x10FFFF)
+                {
+                    chars[currentCharIndex++] = HighSurrogate(_scalarValue);
+                    chars[currentCharIndex++] = LowSurrogate(_scalarValue);
+                }
+                else
+                {
+                    throw new NotImplementedException("DecoderFallback not handled yet.");
+                }
             }
 
             lastByteIndex = currentByteIndex;
@@ -73,12 +118,49 @@ public abstract class RuneDecoder : Decoder
         return currentCharIndex - charIndex;
     }
 
-    protected virtual int IsScalarValueBasic(byte[] bytes, int byteIndex, out bool isBasic)
+    /// <summary>
+    ///     Determines if a Unicode scalar value is represented by a single <pre>char</pre> or
+    ///     if it requires two and returns that result in an output parameter.
+    /// </summary>
+    /// <param name="bytes">
+    ///     The byte array containing the scalar value to check.
+    /// </param>
+    /// <param name="index">
+    ///     The index of the first byte of the encoded scalar value.
+    /// </param>
+    /// <param name="limit">
+    ///     The maximum number of bytes after the <pre>index</pre> to check.
+    /// </param>
+    /// <param name="isBasic">
+    ///     <ul>
+    ///         <li>
+    ///             <pre>true</pre> — The checked scalar value is represented by a single
+    ///             <pre>char</pre> value.
+    ///         </li>
+    ///         <li>
+    ///             <pre>false</pre> — The checked scalar value is represented by two
+    ///             <pre>char</pre> values.
+    ///         </li>
+    ///         <li>
+    ///             <pre>null</pre> — The complete scalar value could not be measured before
+    ///             exceeding <pre>limit</pre>.
+    ///         </li>
+    ///     </ul>
+    /// </param>
+    /// <returns>
+    ///     The number of bytes read to check the scalar value.
+    /// </returns>
+    protected virtual int IsScalarValueBasic(byte[] bytes, int index, int limit
+        , out bool? isBasic)
     {
-        int scalarValue;
-        int bytesRead = ReadScalarValue(bytes, byteIndex, out scalarValue);
+        int? scalarValue;
+        int bytesRead = ReadScalarValue(bytes, index, limit, out scalarValue);
 
-        if ((0 <= scalarValue && scalarValue <= 0xD7FF)
+        if (scalarValue is null)
+        {
+            isBasic = null;
+        }
+        else if ((0 <= scalarValue && scalarValue <= 0xD7FF)
             || (0xE000 <= scalarValue && scalarValue <= 0xFFFF))
         {
             isBasic = true;
@@ -95,7 +177,27 @@ public abstract class RuneDecoder : Decoder
         return bytesRead;
     }
 
-    protected abstract int ReadScalarValue(byte[] bytes, int byteIndex, out int scalarValue);
+    /// <summary>
+    ///     Decodes the next encoded scalar value from a byte array and returns the result in an
+    ///     output parameter.
+    /// </summary>
+    /// <param name="bytes">
+    ///     The byte array containing the sequence of bytes to decode.
+    /// </param>
+    /// <param name="index">
+    ///     The index of the first byte of the encoded scalar value.
+    /// </param>
+    /// <param name="limit">
+    ///     The maximum number of bytes after the <pre>index</pre> to decode.
+    /// </param>
+    /// <param name="scalarValue">
+    ///     The next decoded Unicode scalar value, or <pre>null</pre> if the complete scalar
+    ///     value could not be decoded before exceeding <pre>limit</pre>.
+    /// </param>
+    /// <returns>
+    /// </returns>
+    protected abstract int ReadScalarValue(byte[] bytes, int index, int limit
+        , out int? scalarValue);
 
     private static char HighSurrogate(int scalarValue) =>
         (char)((((uint)scalarValue - 0x10000U) >> 10) + 0xD800);
