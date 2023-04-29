@@ -94,17 +94,17 @@ public abstract class RuneDecoder : Decoder
             currentByteIndex += ReadScalarValue(bytes, currentByteIndex, byteCount
                 , out scalarValue);
 
-            if (scalarValue is int _scalarValue)
+            if (scalarValue is int scalarValue_)
             {
-                if ((0 <= _scalarValue && _scalarValue <= 0xD7FF)
-                    || (0xE000 <= _scalarValue && _scalarValue <= 0xFFFF))
+                if ((0 <= scalarValue_ && scalarValue_ <= 0xD7FF)
+                    || (0xE000 <= scalarValue_ && scalarValue_ <= 0xFFFF))
                 {
-                    chars[currentCharIndex++] = (char)_scalarValue;
+                    chars[currentCharIndex++] = (char)scalarValue_;
                 }
                 else if (0x010000 <= scalarValue && scalarValue <= 0x10FFFF)
                 {
-                    chars[currentCharIndex++] = HighSurrogate(_scalarValue);
-                    chars[currentCharIndex++] = LowSurrogate(_scalarValue);
+                    chars[currentCharIndex++] = HighSurrogate(scalarValue_);
+                    chars[currentCharIndex++] = LowSurrogate(scalarValue_);
                 }
                 else
                 {
