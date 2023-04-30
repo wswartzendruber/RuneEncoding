@@ -150,32 +150,8 @@ public abstract class RuneDecoder : Decoder
     /// <returns>
     ///     The number of bytes read to check the scalar value.
     /// </returns>
-    protected virtual int IsScalarValueBasic(byte[] bytes, int index, int limit
-        , out bool? isBasic)
-    {
-        int? scalarValue;
-        int bytesRead = ReadScalarValue(bytes, index, limit, out scalarValue);
-
-        if (scalarValue is null)
-        {
-            isBasic = null;
-        }
-        else if ((0 <= scalarValue && scalarValue <= 0xD7FF)
-            || (0xE000 <= scalarValue && scalarValue <= 0xFFFF))
-        {
-            isBasic = true;
-        }
-        else if (0x010000 <= scalarValue && scalarValue <= 0x10FFFF)
-        {
-            isBasic = false;
-        }
-        else
-        {
-            throw new NotImplementedException("DecoderFallback not handled yet.");
-        }
-
-        return bytesRead;
-    }
+    protected abstract int IsScalarValueBasic(byte[] bytes, int index, int limit
+        , out bool? isBasic);
 
     /// <summary>
     ///     Decodes the next encoded scalar value from a byte array and returns the result in an
