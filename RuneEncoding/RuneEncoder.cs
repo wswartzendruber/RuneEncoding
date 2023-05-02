@@ -38,26 +38,25 @@ public abstract class RuneEncoder : Encoder
     }
 
     /// <summary>
-    ///     Calculates the number of bytes produced by encoding a set of characters from the
-    ///     specified character array. A parameter indicates whether to flush any trailing high
-    ///     surrogate as an encoding error.
+    ///     Measures the number of bytes that would be needed to encode any pending high
+    ///     surrogate in the encoder state followed by an array of characters. The encoder state
+    ///     <strong>is not</strong> modified.
     /// </summary>
     /// <param name="chars">
-    ///     The character array containing the set of characters to encode.
+    ///     The array of characters to measure.
     /// </param>
     /// <param name="index">
-    ///     The index of the first character to encode.
+    ///     The index of the first character to measure.
     /// </param>
     /// <param name="count">
-    ///     The number of characters to encode.
+    ///     The number of characters to measure.
     /// </param>
     /// <param name="flush">
-    ///     <pre>true</pre> to simulate flushing any trailing high surrogate as an encoding
-    ///     error; otherwise, <pre>false</pre>.
+    ///     Whether or not any trailing high surrogate should be flushed as an encoding error.
     /// </param>
     /// <returns>
-    ///     The number of bytes produced by encoding the specified characters and any characters
-    ///     in the internal buffer.
+    ///     The number of bytes that would be needed to encode any pending high surrogate in the
+    ///     encoder state followed by an array of characters.
     /// </returns>
     public override int GetByteCount(char[] chars, int index, int count, bool flush)
     {
@@ -112,12 +111,11 @@ public abstract class RuneEncoder : Encoder
     }
 
     /// <summary>
-    ///     Encodes any pending high surrogate in the encoder's state followed by a set of
-    ///     characters from the specified character array. A parameter indicates whether to
-    ///     flush any trailing high surrogate as an encoding error.
+    ///     Encodes any pending high surrogate in the encoder state followed by an array of
+    ///     characters. The encoder state <strong>is</strong> modified.
     /// </summary>
     /// <param name="chars">
-    ///     The character array containing the set of characters to encode.
+    ///     The array of characters to encode.
     /// </param>
     /// <param name="charIndex">
     ///     The index of the first character to encode.
@@ -132,11 +130,10 @@ public abstract class RuneEncoder : Encoder
     ///     The index at which to start writing the resulting sequence of bytes.
     /// </param>
     /// <param name="flush">
-    ///     <pre>true</pre> to flush any trailing high surrogate as an encoding error;
-    ///     otherwise, <pre>false</pre>.
+    ///     Whether or not any trailing high surrogate should be flushed as an encoding error.
     /// </param>
     /// <returns>
-    ///     The actual number of bytes written into <pre>bytes</pre>.
+    ///     The number of bytes written.
     /// </returns>
     public override int GetBytes(char[] chars, int charIndex, int charCount, byte[] bytes
         , int byteIndex, bool flush)
@@ -208,6 +205,7 @@ public abstract class RuneEncoder : Encoder
 
     /// <summary>
     ///     Returns the number of bytes needed to encode the specified Unicode scalar value.
+    ///     The encoder state <strong>should not</strong> be modified.
     /// </summary>
     /// <param name="scalarValue">
     ///     The Unicode scalar value, guarnanteed to be within one of the following ranges:
@@ -224,7 +222,8 @@ public abstract class RuneEncoder : Encoder
     protected abstract int ByteCount(int scalarValue);
 
     /// <summary>
-    ///     Encodes the specified Unicode scalar value to the provided byte array.
+    ///     Encodes the specified Unicode scalar value to the provided byte array. The encoder
+    ///     state <strong>should</strong> be modified.
     /// </summary>
     /// <param name="scalarValue">
     ///     The Unicode scalar value, guarnanteed to be within one of the following ranges:
@@ -248,7 +247,7 @@ public abstract class RuneEncoder : Encoder
     protected abstract int WriteBytes(int scalarValue, byte[] bytes, int index);
 
     /// <summary>
-    ///     Resets the surrogate state of the encoder; any buffered high surrogate is cleared.
+    ///     Resets the surrogate state of the encoder; any pending high surrogate is cleared.
     /// </summary>
     public override void Reset()
     {
@@ -257,7 +256,7 @@ public abstract class RuneEncoder : Encoder
     }
 
     /// <summary>
-    ///     Resets the specific state of the encoding.
+    ///     Resets the implementation-specific state of the encoder.
     /// </summary>
     protected virtual void ResetState() { }
 
