@@ -22,21 +22,22 @@ namespace RuneEncoding;
 public abstract class RuneDecoder : Decoder
 {
     /// <summary>
-    ///     Calculates the number of characters produced by decoding a sequence of bytes from
-    ///     the specified byte array.
+    ///     Measures the number of characters that would be needed to encode any pending bytes
+    ///     in the decoder state followed by an array of bytes. The decoder state
+    ///     <strong>is not</strong> modified.
     /// </summary>
     /// <param name="bytes">
-    ///     The byte array containing the sequence of bytes to decode.
+    ///     The array of bytes to measure.
     /// </param>
     /// <param name="index">
-    ///     The index of the first byte to decode.
+    ///     The index of the first byte to measure.
     /// </param>
     /// <param name="count">
-    ///     The number of bytes to decode.
+    ///     The number of bytes to measure.
     /// </param>
     /// <returns>
-    ///     The number of characters produced by decoding the specified sequence of bytes and
-    ///     any bytes in the internal buffer.
+    ///     The number of characters that would be needed to encode any pending bytes in the
+    ///     decoder state followed by an array of bytes.
     /// </returns>
     public override int GetCharCount(byte[] bytes, int index, int count)
     {
@@ -58,11 +59,11 @@ public abstract class RuneDecoder : Decoder
     }
 
     /// <summary>
-    ///     Decodes a sequence of bytes from the specified byte array and any bytes in the
-    ///     internal buffer into the specified character array.
+    ///     Decodes any pending bytes in the decoder state followed by an array of bytes. The
+    ///     decoder state <strong>is</strong> modified.
     /// </summary>
     /// <param name="bytes">
-    ///     The byte array containing the sequence of bytes to decode.
+    ///     The array of bytes to decode.
     /// </param>
     /// <param name="byteIndex">
     ///     The index of the first byte to decode.
@@ -71,13 +72,13 @@ public abstract class RuneDecoder : Decoder
     ///     The number of bytes to decode.
     /// </param>
     /// <param name="chars">
-    ///     The character array to contain the resulting set of characters.
+    ///     The character array to contain the resulting sequence of characters.
     /// </param>
     /// <param name="charIndex">
-    ///     The index at which to start writing the resulting set of characters.
+    ///     The index at which to start writing the resulting sequence of characters.
     /// </param>
     /// <returns>
-    ///     The actual number of characters written into <pre>chars</pre>.
+    ///     The number of characters written.
     /// </returns>
     public override int GetChars(byte[] bytes, int byteIndex, int byteCount, char[] chars
         , int charIndex)
@@ -119,26 +120,27 @@ public abstract class RuneDecoder : Decoder
     }
 
     /// <summary>
-    ///     Determines if a Unicode scalar value is represented by a single <pre>char</pre> or
-    ///     if it requires two and returns that result in an output parameter.
+    ///     Measures if a Unicode scalar value is represented by a single <pre>char</pre> or if
+    ///     it requires two and returns that result in an output parameter. The decoder state
+    ///     <strong>should not</strong> be modified.
     /// </summary>
     /// <param name="bytes">
-    ///     The byte array containing the scalar value to check.
+    ///     The byte array containing the scalar value to measure.
     /// </param>
     /// <param name="index">
-    ///     The index of the first byte of the encoded scalar value.
+    ///     The index of the first byte of the scalar value to measure.
     /// </param>
     /// <param name="limit">
-    ///     The maximum number of bytes after the <pre>index</pre> to check.
+    ///     The maximum number of bytes after the <pre>index</pre> to measure.
     /// </param>
     /// <param name="isBasic">
     ///     <ul>
     ///         <li>
-    ///             <pre>true</pre> — The checked scalar value is represented by a single
+    ///             <pre>true</pre> — The measured scalar value is represented by a single
     ///             <pre>char</pre> value.
     ///         </li>
     ///         <li>
-    ///             <pre>false</pre> — The checked scalar value is represented by two
+    ///             <pre>false</pre> — The measured scalar value is represented by two
     ///             <pre>char</pre> values.
     ///         </li>
     ///         <li>
@@ -148,20 +150,20 @@ public abstract class RuneDecoder : Decoder
     ///     </ul>
     /// </param>
     /// <returns>
-    ///     The number of bytes read to check the scalar value.
+    ///     The number of bytes read to measure the scalar value.
     /// </returns>
     protected abstract int IsScalarValueBasic(byte[] bytes, int index, int limit
         , out bool? isBasic);
 
     /// <summary>
     ///     Decodes the next encoded scalar value from a byte array and returns the result in an
-    ///     output parameter.
+    ///     output parameter. The decoder state <strong>should</strong> be modified.
     /// </summary>
     /// <param name="bytes">
-    ///     The byte array containing the sequence of bytes to decode.
+    ///     The byte array containing the scalar value to decode.
     /// </param>
     /// <param name="index">
-    ///     The index of the first byte of the encoded scalar value.
+    ///     The index of the first byte of the scalar value to decode.
     /// </param>
     /// <param name="limit">
     ///     The maximum number of bytes after the <pre>index</pre> to decode.
@@ -171,6 +173,7 @@ public abstract class RuneDecoder : Decoder
     ///     value could not be decoded before exceeding <pre>limit</pre>.
     /// </param>
     /// <returns>
+    ///     The number of bytes read to decode the scalar value.
     /// </returns>
     protected abstract int ReadScalarValue(byte[] bytes, int index, int limit
         , out int? scalarValue);
