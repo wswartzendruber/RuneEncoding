@@ -84,16 +84,13 @@ public abstract class RuneDecoder : Decoder
         , int charIndex)
     {
         int byteEnd = byteIndex + byteCount;
-        int lastByteIndex = byteIndex;
         int currentByteIndex = byteIndex;
         int currentCharIndex = charIndex;
 
         while (currentByteIndex < byteEnd)
         {
-            int? scalarValue;
-
             currentByteIndex += ReadScalarValue(bytes, currentByteIndex, byteCount
-                , out scalarValue);
+                , out int? scalarValue);
 
             if (scalarValue is int scalarValue_)
             {
@@ -109,11 +106,9 @@ public abstract class RuneDecoder : Decoder
                 }
                 else
                 {
-                    throw new NotImplementedException("DecoderFallback not handled yet.");
+                    chars[currentCharIndex++] = Constants.ReplacementChar;
                 }
             }
-
-            lastByteIndex = currentByteIndex;
         }
 
         return currentCharIndex - charIndex;
@@ -170,7 +165,9 @@ public abstract class RuneDecoder : Decoder
     /// </param>
     /// <param name="scalarValue">
     ///     The next decoded Unicode scalar value, or <pre>null</pre> if the complete scalar
-    ///     value could not be decoded before exceeding <pre>limit</pre>.
+    ///     value could not be decoded before exceeding <pre>limit</pre>. If the value is
+    ///     outside of the standard U+0000 and U+10FFFF range then the decoder will use the
+    ///     U+FFFD replacement character instead.
     /// </param>
     /// <returns>
     ///     The number of bytes read to decode the scalar value.

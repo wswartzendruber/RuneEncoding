@@ -10,9 +10,6 @@
  * SPDX-License-Identifier: CC0-1.0
  */
 
-using System.Text;
-using RuneEncoding;
-
 namespace RuneEncoding.Tests;
 
 public class RuneEncoderTests
