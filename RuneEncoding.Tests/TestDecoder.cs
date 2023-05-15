@@ -15,16 +15,77 @@ namespace RuneEncoding.Tests;
 public class TestDecoder : RuneDecoder
 {
     public List<byte> CountBytes = new();
-    public List<byte> EncodeBytes = new();
+    public List<byte> DecodeBytes = new();
     public List<int> CountIncrements = new();
-    public List<int> EncodeIncrements = new();
+    public List<int> DecodeIncrements = new();
+
+    private byte[] Buffer = new byte[2];
+    private int BufferIndex = 0;
+
+    public void AssertConsistency()
+    {
+        if (!CountBytes.SequenceEqual(DecodeBytes))
+            throw new InvalidOperationException("CountBytes != DecodeBytes");
+        if (!CountIncrements.SequenceEqual(DecodeIncrements))
+            throw new InvalidOperationException("CountIncrements != DecodeIncrements");
+    }
+
+    public override void Reset()
+    {
+        Buffer[0] = 0;
+        Buffer[1] = 0;
+        BufferIndex = 0;
+        CountBytes.Clear();
+        DecodeBytes.Clear();
+        CountIncrements.Clear();
+        DecodeIncrements.Clear();
+    }
 
     protected override int IsScalarValueBasic(byte[] bytes, int index, int limit
         , out bool? isBasic)
     {
         isBasic = null;
 
-        return 0;
+        var buffer = new byte[2];
+        var bufferIndex = BufferIndex;
+        var end = index + limit;
+        var bytesRead = 0;
+
+        buffer[0] = Buffer[0];
+        buffer[1] = Buffer[1];
+
+        for (int offset = index; offset < end; offset++)
+        {
+            switch (bufferIndex)
+            {
+                case 0:
+                    bytesRead++;
+                    buffer[0] = bytes[offset];
+                    CountBytes.Add(bytes[offset]);
+                    bufferIndex = 1;
+                    break;
+                case 1:
+                    bytesRead++;
+                    buffer[1] = bytes[offset];
+                    CountBytes.Add(bytes[offset]);
+                    bufferIndex = 2;
+                    break;
+                case 2:
+                    bytesRead++;
+                    var scalarValue = (buffer[0] << 16) | (buffer[1] << 8) | bytes[offset];
+                    CountBytes.Add(bytes[offset]);
+                    bufferIndex = 0;
+                    if (scalarValue <= 0xFFFF)
+                        isBasic = true;
+                    else
+                        isBasic = false;
+                    return bytesRead;
+                default:
+                    throw new InvalidOperationException("Internal state is irrational.");
+            }
+        }
+
+        return bytesRead;
     }
 
     protected override int ReadScalarValue(byte[] bytes, int index, int limit
@@ -32,6 +93,36 @@ public class TestDecoder : RuneDecoder
     {
         scalarValue = null;
 
-        return 0;
+        var end = index + limit;
+        var bytesRead = 0;
+
+        for (int offset = index; offset < end; offset++)
+        {
+            switch (BufferIndex)
+            {
+                case 0:
+                    bytesRead++;
+                    Buffer[0] = bytes[offset];
+                    DecodeBytes.Add(bytes[offset]);
+                    BufferIndex = 1;
+                    break;
+                case 1:
+                    bytesRead++;
+                    Buffer[1] = bytes[offset];
+                    DecodeBytes.Add(bytes[offset]);
+                    BufferIndex = 2;
+                    break;
+                case 2:
+                    bytesRead++;
+                    scalarValue = (Buffer[0] << 16) | (Buffer[1] << 8) | bytes[offset];
+                    DecodeBytes.Add(bytes[offset]);
+                    BufferIndex = 0;
+                    return bytesRead;
+                default:
+                    throw new InvalidOperationException("Internal state is irrational.");
+            }
+        }
+
+        return bytesRead;
     }
 }

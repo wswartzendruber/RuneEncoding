@@ -36,7 +36,7 @@ public abstract class RuneDecoder : Decoder
     ///     The number of bytes to measure.
     /// </param>
     /// <returns>
-    ///     The number of characters that would be needed to encode any pending bytes in the
+    ///     The number of characters that would be needed to decode any pending bytes in the
     ///     decoder state followed by an array of bytes.
     /// </returns>
     public override int GetCharCount(byte[] bytes, int index, int count)
@@ -47,9 +47,9 @@ public abstract class RuneDecoder : Decoder
 
         while (currentIndex < end)
         {
-            bool? isBasic;
+            var limit = end - currentIndex;
 
-            currentIndex += IsScalarValueBasic(bytes, currentIndex, count, out isBasic);
+            currentIndex += IsScalarValueBasic(bytes, currentIndex, limit, out bool? isBasic);
 
             if (isBasic is not null)
                 returnValue += (isBasic == true) ? 1 : 2;
@@ -89,7 +89,9 @@ public abstract class RuneDecoder : Decoder
 
         while (currentByteIndex < byteEnd)
         {
-            currentByteIndex += ReadScalarValue(bytes, currentByteIndex, byteCount
+            var byteLimit = byteEnd - currentByteIndex;
+
+            currentByteIndex += ReadScalarValue(bytes, currentByteIndex, byteLimit
                 , out int? scalarValue);
 
             if (scalarValue is int scalarValue_)

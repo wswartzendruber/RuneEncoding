@@ -11,10 +11,67 @@
  */
 
 using System.Text;
-using RuneEncoding;
 
 namespace RuneEncoding.Tests;
 
 public class RuneDecoderTests
 {
+    [Fact]
+    public void AllThreeBytesValues()
+    {
+        var index = 0;
+        var decoder = new TestDecoder();
+        var random = new Random(1_024);
+        var bytesList = new List<byte>();
+        var stringBuilder = new StringBuilder();
+        var runeValues = new List<int>();
+
+        for (uint value = 0; value < 16_777_216; value++)
+        {
+            bytesList.Add((byte)(value >> 16));
+            bytesList.Add((byte)(value >> 8));
+            bytesList.Add((byte)value);
+        }
+
+        var bytesArray = bytesList.ToArray();
+
+        while (index < bytesArray.Length)
+        {
+            var count = Math.Min(random.Next(1_024), bytesArray.Length - index);
+            var expectedLength = decoder.GetCharCount(bytesArray, index, count);
+            var chars = new char[expectedLength];
+            var actualLength = decoder.GetChars(bytesArray, index, count, chars, 0);
+
+            if (expectedLength != actualLength)
+            {
+                Console.WriteLine($"count = {count}, expectedLength = {expectedLength}, actualLength = {actualLength}");
+                throw new Exception();
+            }
+            else
+            {
+                Console.WriteLine("MATCH");
+            }
+
+            stringBuilder.Append(chars);
+
+            index += count;
+        }
+
+        decoder.AssertConsistency();
+
+        foreach (var rune in stringBuilder.ToString().EnumerateRunes())
+            runeValues.Add(rune.Value);
+
+        for (int i = 0; i < 0xD800; i++)
+            Assert.True(runeValues[i] == i);
+
+        for (int i = 0xD800; i < 0xE000; i++)
+            Assert.True(runeValues[i] == 0xFFFD);
+
+        for (int i = 0xE000; i < 0x110000; i++)
+            Assert.True(runeValues[i] == i);
+
+        for (int i = 0x110000; i < 0x1000000; i++)
+            Assert.True(runeValues[i] == 0xFFFD);
+    }
 }
