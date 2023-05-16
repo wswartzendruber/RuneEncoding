@@ -41,18 +41,21 @@ public class TestDecoder : RuneDecoder
         DecodeIncrements.Clear();
     }
 
-    protected override int IsScalarValueBasic(byte[] bytes, int index, int limit
+    protected override int IsScalarValueBasic(byte[] bytes, int index, int limit, bool first
         , out bool? isBasic)
     {
         isBasic = null;
 
         var buffer = new byte[2];
-        var bufferIndex = BufferIndex;
+        var bufferIndex = first ? BufferIndex : 0;
         var end = index + limit;
         var bytesRead = 0;
 
-        buffer[0] = Buffer[0];
-        buffer[1] = Buffer[1];
+        if (first)
+        {
+            buffer[0] = Buffer[0];
+            buffer[1] = Buffer[1];
+        }
 
         for (int offset = index; offset < end; offset++)
         {
@@ -60,12 +63,14 @@ public class TestDecoder : RuneDecoder
             {
                 case 0:
                     bytesRead++;
+                    isBasic = null;
                     buffer[0] = bytes[offset];
                     CountBytes.Add(bytes[offset]);
                     bufferIndex = 1;
                     break;
                 case 1:
                     bytesRead++;
+                    isBasic = null;
                     buffer[1] = bytes[offset];
                     CountBytes.Add(bytes[offset]);
                     bufferIndex = 2;
@@ -75,10 +80,15 @@ public class TestDecoder : RuneDecoder
                     var scalarValue = (buffer[0] << 16) | (buffer[1] << 8) | bytes[offset];
                     CountBytes.Add(bytes[offset]);
                     bufferIndex = 0;
-                    if (scalarValue <= 0xFFFF)
+                    if ((0x00 <= scalarValue && scalarValue <= 0xFFFF)
+                        || (0x110000 <= scalarValue))
+                    {
                         isBasic = true;
+                    }
                     else
+                    {
                         isBasic = false;
+                    }
                     return bytesRead;
                 default:
                     throw new InvalidOperationException("Internal state is irrational.");
@@ -102,12 +112,14 @@ public class TestDecoder : RuneDecoder
             {
                 case 0:
                     bytesRead++;
+                    scalarValue = null;
                     Buffer[0] = bytes[offset];
                     DecodeBytes.Add(bytes[offset]);
                     BufferIndex = 1;
                     break;
                 case 1:
                     bytesRead++;
+                    scalarValue = null;
                     Buffer[1] = bytes[offset];
                     DecodeBytes.Add(bytes[offset]);
                     BufferIndex = 2;

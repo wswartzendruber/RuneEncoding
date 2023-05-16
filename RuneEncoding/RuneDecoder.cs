@@ -44,16 +44,20 @@ public abstract class RuneDecoder : Decoder
         var returnValue = 0;
         var end = index + count;
         var currentIndex = index;
+        var first = true;
+        bool? isBasic;
 
-        while (currentIndex < end)
+        do
         {
             var limit = end - currentIndex;
 
-            currentIndex += IsScalarValueBasic(bytes, currentIndex, limit, out bool? isBasic);
+            currentIndex += IsScalarValueBasic(bytes, currentIndex, limit, first, out isBasic);
+            first = false;
 
-            if (isBasic is not null)
-                returnValue += (isBasic == true) ? 1 : 2;
+            if (isBasic is bool isBasic_)
+                returnValue += (isBasic_ == true) ? 1 : 2;
         }
+        while (isBasic is not null);
 
         return returnValue;
     }
@@ -130,6 +134,12 @@ public abstract class RuneDecoder : Decoder
     /// <param name="limit">
     ///     The maximum number of bytes after the <pre>index</pre> to measure.
     /// </param>
+    /// <param name="first">
+    ///     Indicates if this is the first time this function is being invoked for an invocation
+    ///     of <pre>GetCharCount</pre>. If <pre>true</pre>, the decoder state should be read
+    ///     and factored in as there may be trailing bytes left over from the last invocation of
+    ///     <pre>GetChars</pre>.
+    /// </param>
     /// <param name="isBasic">
     ///     <ul>
     ///         <li>
@@ -149,7 +159,7 @@ public abstract class RuneDecoder : Decoder
     /// <returns>
     ///     The number of bytes read to measure the scalar value.
     /// </returns>
-    protected abstract int IsScalarValueBasic(byte[] bytes, int index, int limit
+    protected abstract int IsScalarValueBasic(byte[] bytes, int index, int limit, bool first
         , out bool? isBasic);
 
     /// <summary>

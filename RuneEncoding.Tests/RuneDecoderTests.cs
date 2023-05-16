@@ -42,15 +42,7 @@ public class RuneDecoderTests
             var chars = new char[expectedLength];
             var actualLength = decoder.GetChars(bytesArray, index, count, chars, 0);
 
-            if (expectedLength != actualLength)
-            {
-                Console.WriteLine($"count = {count}, expectedLength = {expectedLength}, actualLength = {actualLength}");
-                throw new Exception();
-            }
-            else
-            {
-                Console.WriteLine("MATCH");
-            }
+            Assert.True(expectedLength == actualLength);
 
             stringBuilder.Append(chars);
 
