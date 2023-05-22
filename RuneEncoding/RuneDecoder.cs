@@ -39,8 +39,32 @@ public abstract class RuneDecoder : Decoder
     ///     The number of characters that would be needed to decode any pending bytes in the
     ///     decoder state followed by an array of bytes.
     /// </returns>
+    /// <exception cref="ArgumentNullException">
+    ///     <list>
+    ///         <item>
+    ///             <paramref name="bytes" /> is <see langword="null" />.
+    ///         </item>
+    ///     </list>
+    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    ///     <list>
+    ///         <item>
+    ///             <paramref name="index" /> is less than zero.
+    ///         </item>
+    ///         <item>
+    ///             <paramref name="count" /> is less than zero.
+    ///         </item>
+    ///     </list>
+    /// </exception>
     public override int GetCharCount(byte[] bytes, int index, int count)
     {
+        if (bytes is null)
+            throw new ArgumentNullException("bytes may not be null.");
+        if (index < 0)
+            throw new ArgumentOutOfRangeException("index may not be less than zero.");
+        if (count < 0)
+            throw new ArgumentOutOfRangeException("count may not be less than zero.");
+
         var returnValue = 0;
         var end = index + count;
         var currentIndex = index;
@@ -84,9 +108,73 @@ public abstract class RuneDecoder : Decoder
     /// <returns>
     ///     The number of characters written.
     /// </returns>
+    /// <exception cref="ArgumentNullException">
+    ///     <list>
+    ///         <item>
+    ///             <paramref name="bytes" /> is <see langword="null" />.
+    ///         </item>
+    ///         <item>
+    ///             <paramref name="chars" /> is <see langword="null" />.
+    ///         </item>
+    ///     </list>
+    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    ///     <list>
+    ///         <item>
+    ///             <paramref name="byteIndex" /> is less than zero.
+    ///         </item>
+    ///         <item>
+    ///             <paramref name="byteCount" /> is less than zero.
+    ///         </item>
+    ///         <item>
+    ///             <paramref name="charIndex" /> is less than zero.
+    ///         </item>
+    ///         <item>
+    ///             <paramref name="byteIndex" /> taken with <paramref name="byteCount" /> are
+    ///             not within <paramref name="bytes" />.
+    ///         </item>
+    ///         <item>
+    ///             <paramref name="charIndex" /> is not within <paramref name="chars" />.
+    ///         </item>
+    ///     </list>
+    /// </exception>
+    /// <exception cref="DecoderFallbackException">
+    ///     A fallback occurs while <see cref="Decoder.Fallback" /> is set to
+    ///     <see cref="DecoderFallbackException" />.
+    /// </exception>
     public override int GetChars(byte[] bytes, int byteIndex, int byteCount, char[] chars
         , int charIndex)
     {
+        if (bytes is null)
+        {
+            throw new ArgumentNullException("bytes may not be null.");
+        }
+        if (chars is null)
+        {
+            throw new ArgumentNullException("chars may not be null.");
+        }
+        if (byteIndex < 0)
+        {
+            throw new ArgumentOutOfRangeException("byteIndex may not be less than zero.");
+        }
+        if (byteCount < 0)
+        {
+            throw new ArgumentOutOfRangeException("byteCount may not be less than zero.");
+        }
+        if (charIndex < 0)
+        {
+            throw new ArgumentOutOfRangeException("charIndex may not be less than zero.");
+        }
+        if (byteIndex + byteCount > bytes.Length)
+        {
+            throw new ArgumentOutOfRangeException
+                ("byteIndex + byteCount may not exceed bytes.Length.");
+        }
+        if (charIndex > chars.Length)
+        {
+            throw new ArgumentOutOfRangeException("charIndex may not exceed chars.Length.");
+        }
+
         int byteEnd = byteIndex + byteCount;
         int currentByteIndex = byteIndex;
         int currentCharIndex = charIndex;
@@ -132,7 +220,7 @@ public abstract class RuneDecoder : Decoder
     ///     The index of the first byte of the scalar value to measure.
     /// </param>
     /// <param name="limit">
-    ///     The maximum number of bytes after the <pre>index</pre> to measure.
+    ///     The maximum number of bytes after the <paramref name="index" /> to measure.
     /// </param>
     /// <param name="first">
     ///     Indicates if this is the first time this function is being invoked for an invocation
@@ -141,20 +229,20 @@ public abstract class RuneDecoder : Decoder
     ///     <pre>GetChars</pre>.
     /// </param>
     /// <param name="isBasic">
-    ///     <ul>
-    ///         <li>
+    ///     <list type="bullet">
+    ///         <item>
     ///             <pre>true</pre> — The measured scalar value is represented by a single
     ///             <pre>char</pre> value.
-    ///         </li>
-    ///         <li>
+    ///         </item>
+    ///         <item>
     ///             <pre>false</pre> — The measured scalar value is represented by two
     ///             <pre>char</pre> values.
-    ///         </li>
-    ///         <li>
+    ///         </item>
+    ///         <item>
     ///             <pre>null</pre> — The complete scalar value could not be measured before
-    ///             exceeding <pre>limit</pre>.
-    ///         </li>
-    ///     </ul>
+    ///             exceeding <paramref name="limit" />.
+    ///         </item>
+    ///     </list>
     /// </param>
     /// <returns>
     ///     The number of bytes read to measure the scalar value.
@@ -173,12 +261,12 @@ public abstract class RuneDecoder : Decoder
     ///     The index of the first byte of the scalar value to decode.
     /// </param>
     /// <param name="limit">
-    ///     The maximum number of bytes after the <pre>index</pre> to decode.
+    ///     The maximum number of bytes after the <paramref name="index" /> to decode.
     /// </param>
     /// <param name="scalarValue">
     ///     The next decoded Unicode scalar value, or <pre>null</pre> if the complete scalar
-    ///     value could not be decoded before exceeding <pre>limit</pre>. If the value is
-    ///     outside of the standard U+0000 and U+10FFFF range then the decoder will use the
+    ///     value could not be decoded before exceeding <paramref name="limit" />. If the value
+    ///     is outside of the standard U+0000 and U+10FFFF range then the decoder will use the
     ///     U+FFFD replacement character instead.
     /// </param>
     /// <returns>
