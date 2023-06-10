@@ -16,14 +16,21 @@
     <LangVersion>10.0</LangVersion>
     <Nullable>enable</Nullable>
     <Authors>William Swartzendruber</Authors>
-    <Product>RuneEncoding</Product>
     <Description>Allows easier implementation of custom encodings.</Description>
     <Copyright>Copyright © 2023 William Swartzendruber</Copyright>
-    <RepositoryUrl>https://github.com/wswartzendruber/RuneEncoding</RepositoryUrl>
     <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
+    <PackageIcon>PackageIcon.png</PackageIcon>
+    <PackageReadmeFile>ReadMe.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/wswartzendruber/RuneEncoding</RepositoryUrl>
     <PackageTags>text;encoding;encoder;decoder;rune;unicode;surrogate;surrogates</PackageTags>
+    <PackageLicenseExpression>CC0-1.0</PackageLicenseExpression>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsPackable>true</IsPackable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="PackageIcon.png" Pack="true" PackagePath="/" />
+    <None Include="ReadMe.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
 
 </Project>
