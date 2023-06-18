@@ -248,6 +248,7 @@ public abstract class RuneEncoder : Encoder
 
     /// <summary>
     ///     Resets the surrogate state of the encoder; any pending high surrogate is cleared.
+    ///     Also resets any implementation-specific state.
     /// </summary>
     public override void Reset()
     {

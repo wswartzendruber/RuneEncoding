@@ -30,7 +30,7 @@ public class TestDecoder : RuneDecoder
             throw new InvalidOperationException("CountIncrements != DecodeIncrements");
     }
 
-    public override void Reset()
+    protected override void ResetState()
     {
         Buffer[0] = 0;
         Buffer[1] = 0;
@@ -41,14 +41,13 @@ public class TestDecoder : RuneDecoder
         DecodeIncrements.Clear();
     }
 
-    protected override int IsScalarValueBasic(byte[] bytes, int index, int limit, bool first
-        , out bool? isBasic)
+    protected override unsafe int AssessScalarValue(byte* bytes, int count, bool first
+        , out bool? isBMP)
     {
-        isBasic = null;
+        isBMP = null;
 
         var buffer = new byte[2];
         var bufferIndex = first ? BufferIndex : 0;
-        var end = index + limit;
         var bytesRead = 0;
 
         if (first)
@@ -57,37 +56,37 @@ public class TestDecoder : RuneDecoder
             buffer[1] = Buffer[1];
         }
 
-        for (int offset = index; offset < end; offset++)
+        for (int byteIndex = 0; byteIndex < count; byteIndex++)
         {
             switch (bufferIndex)
             {
                 case 0:
                     bytesRead++;
-                    isBasic = null;
-                    buffer[0] = bytes[offset];
-                    CountBytes.Add(bytes[offset]);
+                    isBMP = null;
+                    buffer[0] = bytes[byteIndex];
+                    CountBytes.Add(bytes[byteIndex]);
                     bufferIndex = 1;
                     break;
                 case 1:
                     bytesRead++;
-                    isBasic = null;
-                    buffer[1] = bytes[offset];
-                    CountBytes.Add(bytes[offset]);
+                    isBMP = null;
+                    buffer[1] = bytes[byteIndex];
+                    CountBytes.Add(bytes[byteIndex]);
                     bufferIndex = 2;
                     break;
                 case 2:
                     bytesRead++;
-                    var scalarValue = (buffer[0] << 16) | (buffer[1] << 8) | bytes[offset];
-                    CountBytes.Add(bytes[offset]);
+                    var scalarValue = (buffer[0] << 16) | (buffer[1] << 8) | bytes[byteIndex];
+                    CountBytes.Add(bytes[byteIndex]);
                     bufferIndex = 0;
                     if ((0x00 <= scalarValue && scalarValue <= 0xFFFF)
                         || (0x110000 <= scalarValue))
                     {
-                        isBasic = true;
+                        isBMP = true;
                     }
                     else
                     {
-                        isBasic = false;
+                        isBMP = false;
                     }
                     return bytesRead;
                 default:
@@ -98,36 +97,35 @@ public class TestDecoder : RuneDecoder
         return bytesRead;
     }
 
-    protected override int ReadScalarValue(byte[] bytes, int index, int limit
+    protected override unsafe int DecodeScalarValue(byte* bytes, int count
         , out int? scalarValue)
     {
         scalarValue = null;
 
-        var end = index + limit;
         var bytesRead = 0;
 
-        for (int offset = index; offset < end; offset++)
+        for (int byteIndex = 0; byteIndex < count; byteIndex++)
         {
             switch (BufferIndex)
             {
                 case 0:
                     bytesRead++;
                     scalarValue = null;
-                    Buffer[0] = bytes[offset];
-                    DecodeBytes.Add(bytes[offset]);
+                    Buffer[0] = bytes[byteIndex];
+                    DecodeBytes.Add(bytes[byteIndex]);
                     BufferIndex = 1;
                     break;
                 case 1:
                     bytesRead++;
                     scalarValue = null;
-                    Buffer[1] = bytes[offset];
-                    DecodeBytes.Add(bytes[offset]);
+                    Buffer[1] = bytes[byteIndex];
+                    DecodeBytes.Add(bytes[byteIndex]);
                     BufferIndex = 2;
                     break;
                 case 2:
                     bytesRead++;
-                    scalarValue = (Buffer[0] << 16) | (Buffer[1] << 8) | bytes[offset];
-                    DecodeBytes.Add(bytes[offset]);
+                    scalarValue = (Buffer[0] << 16) | (Buffer[1] << 8) | bytes[byteIndex];
+                    DecodeBytes.Add(bytes[byteIndex]);
                     BufferIndex = 0;
                     return bytesRead;
                 default:

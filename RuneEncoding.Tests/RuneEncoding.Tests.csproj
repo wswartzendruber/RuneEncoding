@@ -14,9 +14,9 @@
   <PropertyGroup>
     <TargetFrameworks>net6.0</TargetFrameworks>
     <LangVersion>10.0</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 

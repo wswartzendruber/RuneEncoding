@@ -11,6 +11,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace RuneEncoding;
@@ -21,8 +22,47 @@ namespace RuneEncoding;
 /// </summary>
 public abstract class RuneDecoder : Decoder
 {
+    private static readonly IndexOutOfRangeException CharCountExceededException = new(
+        "Insufficient space for decoded characters.");
+
+#if NET6_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+
     /// <summary>
-    ///     Measures the number of characters that would be needed to encode any pending bytes
+    ///     Measures the number of characters that would be needed to decode any pending bytes
+    ///     in the decoder state followed by a span of bytes. The decoder state
+    ///     <strong>is not</strong> modified.
+    /// </summary>
+    /// <param name="bytes">
+    ///     The span of bytes to measure.
+    /// </param>
+    /// <param name="flush">
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <see langword="true" /> — Any trailing bytes will be flushed as a decoding
+    ///             error.
+    ///         </item>
+    ///         <item>
+    ///             <see langword="false" /> — Any trailing bytes will be seen as the beginning
+    ///             bytes of the next decoding operation.
+    ///         </item>
+    ///     </list>
+    /// </param>
+    /// <returns>
+    ///     The number of characters that would be needed to decode any pending bytes in the
+    ///     decoder state followed by the span of bytes.
+    /// </returns>
+    sealed public override unsafe int GetCharCount(ReadOnlySpan<byte> bytes, bool flush)
+    {
+        fixed (byte* pBytes = bytes)
+        {
+            return GetCharCount(pBytes, bytes.Length, flush);
+        }
+    }
+
+#endif
+
+    /// <summary>
+    ///     Measures the number of characters that would be needed to decode any pending bytes
     ///     in the decoder state followed by an array of bytes. The decoder state
     ///     <strong>is not</strong> modified.
     /// </summary>
@@ -40,51 +80,215 @@ public abstract class RuneDecoder : Decoder
     ///     decoder state followed by an array of bytes.
     /// </returns>
     /// <exception cref="ArgumentNullException">
-    ///     <list>
+    ///     <list type="bullet">
     ///         <item>
     ///             <paramref name="bytes" /> is <see langword="null" />.
     ///         </item>
     ///     </list>
     /// </exception>
     /// <exception cref="ArgumentOutOfRangeException">
-    ///     <list>
+    ///     <list type="bullet">
     ///         <item>
     ///             <paramref name="index" /> is less than zero.
     ///         </item>
     ///         <item>
     ///             <paramref name="count" /> is less than zero.
     ///         </item>
+    ///         <item>
+    ///             <paramref name="index" /> and <paramref name="count" /> taken together
+    ///             lie outside of the <paramref name="bytes" /> array.
+    ///         </item>
     ///     </list>
     /// </exception>
-    public override int GetCharCount(byte[] bytes, int index, int count)
+    sealed public override unsafe int GetCharCount(byte[] bytes, int index, int count) =>
+        GetCharCount(bytes, index, count, false);
+
+    /// <summary>
+    ///     Measures the number of characters that would be needed to decode any pending bytes
+    ///     in the decoder state followed by an array of bytes. The decoder state
+    ///     <strong>is not</strong> modified.
+    /// </summary>
+    /// <param name="bytes">
+    ///     The array of bytes to measure.
+    /// </param>
+    /// <param name="index">
+    ///     The index of the first byte to measure.
+    /// </param>
+    /// <param name="count">
+    ///     The number of bytes to measure.
+    /// </param>
+    /// <param name="flush">
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <see langword="true" /> — Any trailing bytes will be flushed as a decoding
+    ///             error.
+    ///         </item>
+    ///         <item>
+    ///             <see langword="false" /> — Any trailing bytes will be seen as the beginning
+    ///             bytes of the next decoding operation.
+    ///         </item>
+    ///     </list>
+    /// </param>
+    /// <returns>
+    ///     The number of characters that would be needed to decode any pending bytes in the
+    ///     decoder state followed by an array of bytes.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <paramref name="bytes" /> is <see langword="null" />.
+    ///         </item>
+    ///     </list>
+    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <paramref name="index" /> is less than zero.
+    ///         </item>
+    ///         <item>
+    ///             <paramref name="count" /> is less than zero.
+    ///         </item>
+    ///         <item>
+    ///             <paramref name="index" /> and <paramref name="count" /> taken together
+    ///             lie outside of the <paramref name="bytes" /> array.
+    ///         </item>
+    ///     </list>
+    /// </exception>
+    sealed public override unsafe int GetCharCount(byte[] bytes, int index, int count
+        , bool flush)
     {
         if (bytes is null)
-            throw new ArgumentNullException("bytes may not be null.");
+        {
+            throw new ArgumentNullException("The bytes parameter is null.");
+        }
         if (index < 0)
-            throw new ArgumentOutOfRangeException("index may not be less than zero.");
+        {
+            throw new ArgumentOutOfRangeException("The index parameter is less than zero.");
+        }
+        if (index + count > bytes.Length)
+        {
+            throw new ArgumentOutOfRangeException(
+                "The index and count parameters taken together lie outside of the byte array.");
+        }
+
+        fixed (byte* pBytes = bytes)
+        {
+            return GetCharCount(pBytes + index, count, flush);
+        }
+    }
+
+    /// <summary>
+    ///     Measures the number of characters that would be needed to decode any pending bytes
+    ///     in the decoder state followed by a sequence of bytes. The decoder state
+    ///     <strong>is not</strong> modified.
+    /// </summary>
+    /// <param name="bytes">
+    ///     A pointer to the first byte in a sequence of bytes to measure.
+    /// </param>
+    /// <param name="count">
+    ///     The number of bytes to measure.
+    /// </param>
+    /// <param name="flush">
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <see langword="true" /> — Any trailing bytes will be flushed as a decoding
+    ///             error.
+    ///         </item>
+    ///         <item>
+    ///             <see langword="false" /> — Any trailing bytes will be seen as the beginning
+    ///             bytes of the next decoding operation.
+    ///         </item>
+    ///     </list>
+    /// </param>
+    /// <returns>
+    ///     The number of characters that would be needed to decode any pending bytes in the
+    ///     decoder state followed by an array of bytes.
+    /// </returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <paramref name="count" /> is less than zero.
+    ///         </item>
+    ///     </list>
+    /// </exception>
+    sealed public override unsafe int GetCharCount(byte* bytes, int count, bool flush)
+    {
         if (count < 0)
-            throw new ArgumentOutOfRangeException("count may not be less than zero.");
+            throw new ArgumentOutOfRangeException("The count parameter is less than zero.");
 
         var returnValue = 0;
-        var end = index + count;
-        var currentIndex = index;
+        var currentIndex = 0;
         var first = true;
-        bool? isBasic;
+        bool? isBMP;
 
-        do
+        while (true)
         {
-            var limit = end - currentIndex;
+            var limit = count - currentIndex;
+            var bytesRead = AssessScalarValue(bytes + currentIndex, limit, first, out isBMP);
 
-            currentIndex += IsScalarValueBasic(bytes, currentIndex, limit, first, out isBasic);
             first = false;
+            currentIndex += bytesRead;
 
-            if (isBasic is bool isBasic_)
-                returnValue += (isBasic_ == true) ? 1 : 2;
+            if (isBMP is bool isBMP_)
+            {
+                returnValue += (isBMP_ == true) ? 1 : 2;
+            }
+            else
+            {
+                if (flush == true && bytesRead > 0)
+                {
+                    // TODO: Get Fallback chars
+
+                    Reset();
+                }
+
+                return returnValue;
+            }
         }
-        while (isBasic is not null);
-
-        return returnValue;
     }
+
+#if NET6_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+
+    /// <summary>
+    ///     Decodes any pending bytes in the decoder state followed by a span of bytes. The
+    ///     decoder state <strong>is</strong> modified.
+    /// </summary>
+    /// <param name="bytes">
+    ///     The span of bytes to decode.
+    /// </param>
+    /// <param name="chars">
+    ///     The character span to contain the decoded characters.
+    /// </param>
+    /// <param name="flush">
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <see langword="true" /> — Any trailing bytes will be flushed as a decoding
+    ///             error.
+    ///         </item>
+    ///         <item>
+    ///             <see langword="false" /> — Any trailing bytes will be seen as the beginning
+    ///             bytes of the next decoding operation.
+    ///         </item>
+    ///     </list>
+    /// </param>
+    /// <returns>
+    ///     The number of characters written.
+    /// </returns>
+    /// <exception cref="DecoderFallbackException">
+    ///     A fallback occurs while <see cref="Decoder.Fallback" /> is set to
+    ///     <see cref="DecoderFallbackException" />.
+    /// </exception>
+    sealed public override unsafe int GetChars(ReadOnlySpan<byte> bytes, Span<char> chars
+        , bool flush)
+    {
+        fixed (byte* pBytes = bytes)
+        fixed (char* pChars = chars)
+        {
+            return GetChars(pBytes, bytes.Length, pChars, chars.Length, flush);
+        }
+    }
+
+#endif
 
     /// <summary>
     ///     Decodes any pending bytes in the decoder state followed by an array of bytes. The
@@ -100,10 +304,10 @@ public abstract class RuneDecoder : Decoder
     ///     The number of bytes to decode.
     /// </param>
     /// <param name="chars">
-    ///     The character array to contain the resulting sequence of characters.
+    ///     The character array to contain the decoded characters.
     /// </param>
     /// <param name="charIndex">
-    ///     The index at which to start writing the resulting sequence of characters.
+    ///     The index at which to start writing the decoded characters.
     /// </param>
     /// <returns>
     ///     The number of characters written.
@@ -130,11 +334,11 @@ public abstract class RuneDecoder : Decoder
     ///             <paramref name="charIndex" /> is less than zero.
     ///         </item>
     ///         <item>
-    ///             <paramref name="byteIndex" /> taken with <paramref name="byteCount" /> are
-    ///             not within <paramref name="bytes" />.
+    ///             <paramref name="byteIndex" /> and <paramref name="byteCount" /> taken
+    ///             together lie outside of the <paramref name="bytes" /> array.
     ///         </item>
     ///         <item>
-    ///             <paramref name="charIndex" /> is not within <paramref name="chars" />.
+    ///             <paramref name="charIndex" /> lies ouside of <paramref name="chars" />.
     ///         </item>
     ///     </list>
     /// </exception>
@@ -142,48 +346,173 @@ public abstract class RuneDecoder : Decoder
     ///     A fallback occurs while <see cref="Decoder.Fallback" /> is set to
     ///     <see cref="DecoderFallbackException" />.
     /// </exception>
-    public override int GetChars(byte[] bytes, int byteIndex, int byteCount, char[] chars
-        , int charIndex)
+    sealed public override unsafe int GetChars(byte[] bytes, int byteIndex, int byteCount
+        , char[] chars, int charIndex) =>
+        GetChars(bytes, byteIndex, byteCount, chars, charIndex, false);
+
+    /// <summary>
+    ///     Decodes any pending bytes in the decoder state followed by an array of bytes. The
+    ///     decoder state <strong>is</strong> modified.
+    /// </summary>
+    /// <param name="bytes">
+    ///     The array of bytes to decode.
+    /// </param>
+    /// <param name="byteIndex">
+    ///     The index of the first byte to decode.
+    /// </param>
+    /// <param name="byteCount">
+    ///     The number of bytes to decode.
+    /// </param>
+    /// <param name="chars">
+    ///     The character array to contain the decoded characters.
+    /// </param>
+    /// <param name="charIndex">
+    ///     The index at which to start writing the decoded characters.
+    /// </param>
+    /// <param name="flush">
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <see langword="true" /> — Any trailing bytes will be flushed as a decoding
+    ///             error.
+    ///         </item>
+    ///         <item>
+    ///             <see langword="false" /> — Any trailing bytes will be seen as the beginning
+    ///             bytes of the next decoding operation.
+    ///         </item>
+    ///     </list>
+    /// </param>
+    /// <returns>
+    ///     The number of characters written.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    ///     <list>
+    ///         <item>
+    ///             <paramref name="bytes" /> is <see langword="null" />.
+    ///         </item>
+    ///         <item>
+    ///             <paramref name="chars" /> is <see langword="null" />.
+    ///         </item>
+    ///     </list>
+    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    ///     <list>
+    ///         <item>
+    ///             <paramref name="byteIndex" /> is less than zero.
+    ///         </item>
+    ///         <item>
+    ///             <paramref name="byteCount" /> is less than zero.
+    ///         </item>
+    ///         <item>
+    ///             <paramref name="charIndex" /> is less than zero.
+    ///         </item>
+    ///         <item>
+    ///             <paramref name="byteIndex" /> and <paramref name="byteCount" /> taken
+    ///             together lie outside of the <paramref name="bytes" /> array.
+    ///         </item>
+    ///         <item>
+    ///             <paramref name="charIndex" /> lies ouside of <paramref name="chars" />.
+    ///         </item>
+    ///     </list>
+    /// </exception>
+    /// <exception cref="DecoderFallbackException">
+    ///     A fallback occurs while <see cref="Decoder.Fallback" /> is set to
+    ///     <see cref="DecoderFallbackException" />.
+    /// </exception>
+    sealed public override unsafe int GetChars(byte[] bytes, int byteIndex, int byteCount
+        , char[] chars, int charIndex, bool flush)
     {
         if (bytes is null)
         {
-            throw new ArgumentNullException("bytes may not be null.");
+            throw new ArgumentNullException("The bytes parameter is null.");
         }
         if (chars is null)
         {
-            throw new ArgumentNullException("chars may not be null.");
+            throw new ArgumentNullException("The chars parameter is null.");
         }
         if (byteIndex < 0)
         {
-            throw new ArgumentOutOfRangeException("byteIndex may not be less than zero.");
-        }
-        if (byteCount < 0)
-        {
-            throw new ArgumentOutOfRangeException("byteCount may not be less than zero.");
+            throw new ArgumentOutOfRangeException("The byteIndex parameter is less than zero.");
         }
         if (charIndex < 0)
         {
-            throw new ArgumentOutOfRangeException("charIndex may not be less than zero.");
+            throw new ArgumentOutOfRangeException("The charIndex parameter is less than zero.");
         }
         if (byteIndex + byteCount > bytes.Length)
         {
-            throw new ArgumentOutOfRangeException
-                ("byteIndex + byteCount may not exceed bytes.Length.");
+            throw new ArgumentOutOfRangeException("The byteIndex and byteCount parameters "
+                + "taken together lie outside of the byte array.");
         }
-        if (charIndex > chars.Length)
+        if (charIndex > 0 && charIndex >= chars.Length)
         {
-            throw new ArgumentOutOfRangeException("charIndex may not exceed chars.Length.");
+            throw new ArgumentOutOfRangeException(
+                "The charIndex parameter lies outside of the char array.");
         }
 
-        int byteEnd = byteIndex + byteCount;
-        int currentByteIndex = byteIndex;
-        int currentCharIndex = charIndex;
-
-        while (currentByteIndex < byteEnd)
+        fixed (byte* pBytes = bytes)
+        fixed (char* pChars = chars)
         {
-            var byteLimit = byteEnd - currentByteIndex;
+            return GetChars(pBytes + byteIndex, byteCount, pChars + charIndex
+                , chars.Length - charIndex, flush);
+        }
+    }
+    /// <summary>
+    ///     Decodes any pending bytes in the decoder state followed by a sequence of bytes. The
+    ///     decoder state <strong>is</strong> modified.
+    /// </summary>
+    /// <param name="bytes">
+    ///     A pointer to the first byte in a sequence of bytes to decode.
+    /// </param>
+    /// <param name="byteCount">
+    ///     The number of bytes to decode.
+    /// </param>
+    /// <param name="chars">
+    ///     A pointer to the location at which to start writing the decoded characters.
+    /// </param>
+    /// <param name="charCount">
+    ///     The maximum number of characters to write.
+    /// </param>
+    /// <param name="flush">
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <see langword="true" /> — Any trailing bytes will be flushed as a decoding
+    ///             error.
+    ///         </item>
+    ///         <item>
+    ///             <see langword="false" /> — Any trailing bytes will be seen as the beginning
+    ///             bytes of the next decoding operation.
+    ///         </item>
+    ///     </list>
+    /// </param>
+    /// <returns>
+    ///     The number of characters written.
+    /// </returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    ///     <list>
+    ///         <item>
+    ///             <paramref name="byteCount" /> is less than zero.
+    ///         </item>
+    ///     </list>
+    /// </exception>
+    /// <exception cref="DecoderFallbackException">
+    ///     A fallback occurs while <see cref="Decoder.Fallback" /> is set to
+    ///     <see cref="DecoderFallbackException" />.
+    /// </exception>
+    sealed public override unsafe int GetChars(byte* bytes, int byteCount, char* chars
+        , int charCount, bool flush)
+    {
+        if (byteCount < 0)
+            throw new ArgumentOutOfRangeException("The byteCount parameter is less than zero.");
+        if (charCount < 0)
+            throw new ArgumentOutOfRangeException("The charCount parameter is less than zero.");
 
-            currentByteIndex += ReadScalarValue(bytes, currentByteIndex, byteLimit
+        int currentByteIndex = 0;
+        int currentCharIndex = 0;
+
+        while (currentByteIndex < byteCount)
+        {
+            var byteLimit = byteCount - currentByteIndex;
+
+            currentByteIndex += DecodeScalarValue(bytes + currentByteIndex, byteLimit
                 , out int? scalarValue);
 
             if (scalarValue is int scalarValue_)
@@ -191,89 +520,114 @@ public abstract class RuneDecoder : Decoder
                 if ((0 <= scalarValue_ && scalarValue_ <= 0xD7FF)
                     || (0xE000 <= scalarValue_ && scalarValue_ <= 0xFFFF))
                 {
-                    chars[currentCharIndex++] = (char)scalarValue_;
+                    if (currentCharIndex < charCount)
+                        chars[currentCharIndex++] = (char)scalarValue_;
+                    else
+                        throw CharCountExceededException;
                 }
                 else if (0x010000 <= scalarValue && scalarValue <= 0x10FFFF)
                 {
-                    chars[currentCharIndex++] = HighSurrogate(scalarValue_);
-                    chars[currentCharIndex++] = LowSurrogate(scalarValue_);
+                    if (currentCharIndex < charCount)
+                        chars[currentCharIndex++] = HighSurrogate(scalarValue_);
+                    else
+                        throw CharCountExceededException;
+
+                    if (currentCharIndex < charCount)
+                        chars[currentCharIndex++] = LowSurrogate(scalarValue_);
+                    else
+                        throw CharCountExceededException;
                 }
                 else
                 {
-                    chars[currentCharIndex++] = Constants.ReplacementChar;
+                    if (currentCharIndex < charCount)
+                        chars[currentCharIndex++] = Constants.ReplacementChar;
+                    else
+                        throw CharCountExceededException;
                 }
             }
         }
 
-        return currentCharIndex - charIndex;
+        // TODO: Handle error flushing.
+
+        return currentCharIndex;
     }
 
     /// <summary>
-    ///     Measures if a Unicode scalar value is represented by a single <pre>char</pre> or if
-    ///     it requires two and returns that result in an output parameter. The decoder state
-    ///     <strong>should not</strong> be modified.
+    ///     Attempts to determine if the encoded scalar value at the start of a byte sequence
+    ///     lies within the Basic Multilingual Plane.
     /// </summary>
     /// <param name="bytes">
-    ///     The byte array containing the scalar value to measure.
+    ///     A pointer to the first byte of the encoded scalar value.
     /// </param>
-    /// <param name="index">
-    ///     The index of the first byte of the scalar value to measure.
-    /// </param>
-    /// <param name="limit">
-    ///     The maximum number of bytes after the <paramref name="index" /> to measure.
+    /// <param name="count">
+    ///     The maximum number of bytes to read in order to assess the scalar value.
     /// </param>
     /// <param name="first">
-    ///     Indicates if this is the first time this function is being invoked for an invocation
-    ///     of <pre>GetCharCount</pre>. If <pre>true</pre>, the decoder state should be read
-    ///     and factored in as there may be trailing bytes left over from the last invocation of
-    ///     <pre>GetChars</pre>.
+    ///     Indicates if this is the first time this method is being invoked for a given
+    ///     invocation of <see cref="o:System.Text.Decoder.GetCharCount" />. If
+    ///     <see langword="true" />, the decoder state should be read and factored in as there
+    ///     may be trailing bytes left over from the last invocation of
+    ///     <see cref="o:System.Text.Decoder.GetChars" />.
     /// </param>
-    /// <param name="isBasic">
+    /// <param name="isBMP">
     ///     <list type="bullet">
     ///         <item>
-    ///             <pre>true</pre> — The measured scalar value is represented by a single
-    ///             <pre>char</pre> value.
+    ///             <see langword="true" /> — The assessed scalar value lies within the BMP and
+    ///             is therefore represented by a single <see cref="System.Char" /> value.
     ///         </item>
     ///         <item>
-    ///             <pre>false</pre> — The measured scalar value is represented by two
-    ///             <pre>char</pre> values.
+    ///             <see langword="false" /> — The assessed scalar value lies outside of the BMP
+    ///             and is therefore represented by two <see cref="System.Char" /> values.
     ///         </item>
     ///         <item>
-    ///             <pre>null</pre> — The complete scalar value could not be measured before
-    ///             exceeding <paramref name="limit" />.
+    ///             <see langword="null" /> — The provided byte sequence was exhausted
+    ///             (according to <paramref name="count" />) before the scalar value could be
+    ///             assessed.
     ///         </item>
     ///     </list>
     /// </param>
     /// <returns>
-    ///     The number of bytes read to measure the scalar value.
+    ///     The number of bytes read attempting to assess the scalar value.
     /// </returns>
-    protected abstract int IsScalarValueBasic(byte[] bytes, int index, int limit, bool first
-        , out bool? isBasic);
+    protected abstract unsafe int AssessScalarValue(byte* bytes, int count, bool first
+        , out bool? isBMP);
 
     /// <summary>
-    ///     Decodes the next encoded scalar value from a byte array and returns the result in an
-    ///     output parameter. The decoder state <strong>should</strong> be modified.
+    ///     Attempts to decode the scalar value at the start of a byte sequence.
     /// </summary>
     /// <param name="bytes">
-    ///     The byte array containing the scalar value to decode.
+    ///     A pointer to the first byte of the encoded scalar value.
     /// </param>
-    /// <param name="index">
-    ///     The index of the first byte of the scalar value to decode.
-    /// </param>
-    /// <param name="limit">
-    ///     The maximum number of bytes after the <paramref name="index" /> to decode.
+    /// <param name="count">
+    ///     The maximum number of bytes to read in order to decode the scalar value.
     /// </param>
     /// <param name="scalarValue">
-    ///     The next decoded Unicode scalar value, or <pre>null</pre> if the complete scalar
-    ///     value could not be decoded before exceeding <paramref name="limit" />. If the value
-    ///     is outside of the standard U+0000 and U+10FFFF range then the decoder will use the
-    ///     U+FFFD replacement character instead.
+    ///     The decoded scalar value, which should lie within either of the following inclusive
+    ///     ranges:
+    ///     <list type="bullet">
+    ///         <item><pre>U+0000</pre> - <pre>U+D7FF</pre></item>
+    ///         <item><pre>U+E000</pre> - <pre>U+10FFFF</pre></item>
+    ///     </list>
+    ///     This parameter should be set to <see langword="null" /> if the provided byte
+    ///     sequence is exhausted (according to <paramref name="count" />) before the scalar
+    ///     value could be can be decoded.
     /// </param>
     /// <returns>
-    ///     The number of bytes read to decode the scalar value.
+    ///     The number of bytes read attempting to decode the scalar value.
     /// </returns>
-    protected abstract int ReadScalarValue(byte[] bytes, int index, int limit
+    protected abstract unsafe int DecodeScalarValue(byte* bytes, int count
         , out int? scalarValue);
+
+    /// <summary>
+    ///     Resets the internal state of the decoder.
+    /// </summary>
+    sealed public override void Reset() =>
+        ResetState();
+
+    /// <summary>
+    ///     Resets the implementation-specific state of the decoder.
+    /// </summary>
+    protected virtual void ResetState() { }
 
     private static char HighSurrogate(int scalarValue) =>
         (char)((((uint)scalarValue - 0x10000U) >> 10) + 0xD800);
