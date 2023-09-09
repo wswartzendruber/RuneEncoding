@@ -22,10 +22,10 @@ namespace RuneEncoding;
 /// </summary>
 public abstract class RuneDecoder : Decoder
 {
-    private static readonly IndexOutOfRangeException CharCountExceededException = new(
-        "Insufficient space for decoded characters.");
+    private static readonly IndexOutOfRangeException CharCountExceededException
+        = new("Insufficient space for decoded characters.");
 
-#if NET6_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER
 
     /// <summary>
     ///     Measures the number of characters that would be needed to decode any pending bytes
@@ -38,12 +38,16 @@ public abstract class RuneDecoder : Decoder
     /// <param name="flush">
     ///     <list type="bullet">
     ///         <item>
-    ///             <see langword="true" /> — Any trailing bytes will be flushed as a decoding
-    ///             error.
+    ///             <description>
+    ///                 <see langword="true" /> — Any trailing bytes will be flushed as a
+    ///                 decoding error.
+    ///             </description>
     ///         </item>
     ///         <item>
-    ///             <see langword="false" /> — Any trailing bytes will be seen as the beginning
-    ///             bytes of the next decoding operation.
+    ///             <description>
+    ///                 <see langword="false" /> — Any trailing bytes will be seen as the
+    ///                 beginning bytes of the next decoding operation.
+    ///             </description>
     ///         </item>
     ///     </list>
     /// </param>
@@ -82,21 +86,29 @@ public abstract class RuneDecoder : Decoder
     /// <exception cref="ArgumentNullException">
     ///     <list type="bullet">
     ///         <item>
-    ///             <paramref name="bytes" /> is <see langword="null" />.
+    ///             <description>
+    ///                 Thrown when <paramref name="bytes" /> is <see langword="null" />.
+    ///             </description>
     ///         </item>
     ///     </list>
     /// </exception>
     /// <exception cref="ArgumentOutOfRangeException">
     ///     <list type="bullet">
     ///         <item>
-    ///             <paramref name="index" /> is less than zero.
+    ///             <description>
+    ///                 Thrown when <paramref name="index" /> is less than zero.
+    ///             </description>
     ///         </item>
     ///         <item>
-    ///             <paramref name="count" /> is less than zero.
+    ///             <description>
+    ///                 Thrown when <paramref name="count" /> is less than zero.
+    ///             </description>
     ///         </item>
     ///         <item>
-    ///             <paramref name="index" /> and <paramref name="count" /> taken together
-    ///             lie outside of the <paramref name="bytes" /> array.
+    ///             <description>
+    ///                 Thrown when <paramref name="index" /> and <paramref name="count" />
+    ///                 taken together lie outside of the <paramref name="bytes" /> array.
+    ///             </description>
     ///         </item>
     ///     </list>
     /// </exception>
@@ -120,12 +132,16 @@ public abstract class RuneDecoder : Decoder
     /// <param name="flush">
     ///     <list type="bullet">
     ///         <item>
-    ///             <see langword="true" /> — Any trailing bytes will be flushed as a decoding
-    ///             error.
+    ///             <description>
+    ///                 <see langword="true" /> — Any trailing bytes will be flushed as a
+    ///                 decoding error.
+    ///             </description>
     ///         </item>
     ///         <item>
-    ///             <see langword="false" /> — Any trailing bytes will be seen as the beginning
-    ///             bytes of the next decoding operation.
+    ///             <description>
+    ///                 <see langword="false" /> — Any trailing bytes will be seen as the
+    ///                 beginning bytes of the next decoding operation.
+    ///             </description>
     ///         </item>
     ///     </list>
     /// </param>
@@ -136,21 +152,29 @@ public abstract class RuneDecoder : Decoder
     /// <exception cref="ArgumentNullException">
     ///     <list type="bullet">
     ///         <item>
-    ///             <paramref name="bytes" /> is <see langword="null" />.
+    ///             <description>
+    ///                 Thrown when <paramref name="bytes" /> is <see langword="null" />.
+    ///             </description>
     ///         </item>
     ///     </list>
     /// </exception>
     /// <exception cref="ArgumentOutOfRangeException">
     ///     <list type="bullet">
     ///         <item>
-    ///             <paramref name="index" /> is less than zero.
+    ///             <description>
+    ///                 Thrown when <paramref name="index" /> is less than zero.
+    ///             </description>
     ///         </item>
     ///         <item>
-    ///             <paramref name="count" /> is less than zero.
+    ///             <description>
+    ///                 Thrown when <paramref name="count" /> is less than zero.
+    ///             </description>
     ///         </item>
     ///         <item>
-    ///             <paramref name="index" /> and <paramref name="count" /> taken together
-    ///             lie outside of the <paramref name="bytes" /> array.
+    ///             <description>
+    ///                 Thrown when <paramref name="index" /> and <paramref name="count" />
+    ///                 taken together lie outside of the <paramref name="bytes" /> array.
+    ///             </description>
     ///         </item>
     ///     </list>
     /// </exception>
@@ -191,12 +215,16 @@ public abstract class RuneDecoder : Decoder
     /// <param name="flush">
     ///     <list type="bullet">
     ///         <item>
-    ///             <see langword="true" /> — Any trailing bytes will be flushed as a decoding
-    ///             error.
+    ///             <description>
+    ///                 <see langword="true" /> — Any trailing bytes will be flushed as a
+    ///                 decoding error.
+    ///             </description>
     ///         </item>
     ///         <item>
-    ///             <see langword="false" /> — Any trailing bytes will be seen as the beginning
-    ///             bytes of the next decoding operation.
+    ///             <description>
+    ///                 <see langword="false" /> — Any trailing bytes will be seen as the
+    ///                 beginning bytes of the next decoding operation.
+    ///             </description>
     ///         </item>
     ///     </list>
     /// </param>
@@ -207,7 +235,9 @@ public abstract class RuneDecoder : Decoder
     /// <exception cref="ArgumentOutOfRangeException">
     ///     <list type="bullet">
     ///         <item>
-    ///             <paramref name="count" /> is less than zero.
+    ///             <description>
+    ///                 Thrown when <paramref name="count" /> is less than zero.
+    ///             </description>
     ///         </item>
     ///     </list>
     /// </exception>
@@ -247,7 +277,7 @@ public abstract class RuneDecoder : Decoder
         }
     }
 
-#if NET6_0_OR_GREATER || NETSTANDARD2_1_OR_GREATER
+#if NETSTANDARD2_1_OR_GREATER
 
     /// <summary>
     ///     Decodes any pending bytes in the decoder state followed by a span of bytes. The
@@ -262,12 +292,16 @@ public abstract class RuneDecoder : Decoder
     /// <param name="flush">
     ///     <list type="bullet">
     ///         <item>
-    ///             <see langword="true" /> — Any trailing bytes will be flushed as a decoding
-    ///             error.
+    ///             <description>
+    ///                 <see langword="true" /> — Any trailing bytes will be flushed as a
+    ///                 decoding error.
+    ///             </description>
     ///         </item>
     ///         <item>
-    ///             <see langword="false" /> — Any trailing bytes will be seen as the beginning
-    ///             bytes of the next decoding operation.
+    ///             <description>
+    ///                 <see langword="false" /> — Any trailing bytes will be seen as the
+    ///                 beginning bytes of the next decoding operation.
+    ///             </description>
     ///         </item>
     ///     </list>
     /// </param>
@@ -275,7 +309,7 @@ public abstract class RuneDecoder : Decoder
     ///     The number of characters written.
     /// </returns>
     /// <exception cref="DecoderFallbackException">
-    ///     A fallback occurs while <see cref="Decoder.Fallback" /> is set to
+    ///     Thrown when a fallback occurs while <see cref="Decoder.Fallback" /> is set to
     ///     <see cref="DecoderFallbackException" />.
     /// </exception>
     sealed public override unsafe int GetChars(ReadOnlySpan<byte> bytes, Span<char> chars
@@ -315,35 +349,51 @@ public abstract class RuneDecoder : Decoder
     /// <exception cref="ArgumentNullException">
     ///     <list>
     ///         <item>
-    ///             <paramref name="bytes" /> is <see langword="null" />.
+    ///             <description>
+    ///                 Thrown when <paramref name="bytes" /> is <see langword="null" />.
+    ///             </description>
     ///         </item>
     ///         <item>
-    ///             <paramref name="chars" /> is <see langword="null" />.
+    ///             <description>
+    ///                 Thrown when <paramref name="chars" /> is <see langword="null" />.
+    ///             </description>
     ///         </item>
     ///     </list>
     /// </exception>
     /// <exception cref="ArgumentOutOfRangeException">
     ///     <list>
     ///         <item>
-    ///             <paramref name="byteIndex" /> is less than zero.
+    ///             <description>
+    ///                 Thrown when <paramref name="byteIndex" /> is less than zero.
+    ///             </description>
     ///         </item>
     ///         <item>
-    ///             <paramref name="byteCount" /> is less than zero.
+    ///             <description>
+    ///                 Thrown when <paramref name="byteCount" /> is less than zero.
+    ///             </description>
     ///         </item>
     ///         <item>
-    ///             <paramref name="charIndex" /> is less than zero.
+    ///             <description>
+    ///                 Thrown when <paramref name="charIndex" /> is less than zero.
+    ///             </description>
     ///         </item>
     ///         <item>
-    ///             <paramref name="byteIndex" /> and <paramref name="byteCount" /> taken
-    ///             together lie outside of the <paramref name="bytes" /> array.
+    ///             <description>
+    ///                 Thrown when <paramref name="byteIndex" /> and
+    ///                 <paramref name="byteCount" /> taken together lie outside of the
+    ///                 <paramref name="bytes" /> array.
+    ///             </description>
     ///         </item>
     ///         <item>
-    ///             <paramref name="charIndex" /> lies ouside of <paramref name="chars" />.
+    ///             <description>
+    ///                 Thrown when <paramref name="charIndex" /> lies ouside of
+    ///                 <paramref name="chars" />.
+    ///             </description>
     ///         </item>
     ///     </list>
     /// </exception>
     /// <exception cref="DecoderFallbackException">
-    ///     A fallback occurs while <see cref="Decoder.Fallback" /> is set to
+    ///     Thrown when a fallback occurs while <see cref="Decoder.Fallback" /> is set to
     ///     <see cref="DecoderFallbackException" />.
     /// </exception>
     sealed public override unsafe int GetChars(byte[] bytes, int byteIndex, int byteCount
@@ -372,12 +422,16 @@ public abstract class RuneDecoder : Decoder
     /// <param name="flush">
     ///     <list type="bullet">
     ///         <item>
-    ///             <see langword="true" /> — Any trailing bytes will be flushed as a decoding
-    ///             error.
+    ///             <description>
+    ///                 <see langword="true" /> — Any trailing bytes will be flushed as a
+    ///                 decoding error.
+    ///             </description>
     ///         </item>
     ///         <item>
-    ///             <see langword="false" /> — Any trailing bytes will be seen as the beginning
-    ///             bytes of the next decoding operation.
+    ///             <description>
+    ///                 <see langword="false" /> — Any trailing bytes will be seen as the
+    ///                 beginning bytes of the next decoding operation.
+    ///             </description>
     ///         </item>
     ///     </list>
     /// </param>
@@ -387,35 +441,51 @@ public abstract class RuneDecoder : Decoder
     /// <exception cref="ArgumentNullException">
     ///     <list>
     ///         <item>
-    ///             <paramref name="bytes" /> is <see langword="null" />.
+    ///             <description>
+    ///                 Thrown when <paramref name="bytes" /> is <see langword="null" />.
+    ///             </description>
     ///         </item>
     ///         <item>
-    ///             <paramref name="chars" /> is <see langword="null" />.
+    ///             <description>
+    ///                 Thrown when <paramref name="chars" /> is <see langword="null" />.
+    ///             </description>
     ///         </item>
     ///     </list>
     /// </exception>
     /// <exception cref="ArgumentOutOfRangeException">
     ///     <list>
     ///         <item>
-    ///             <paramref name="byteIndex" /> is less than zero.
+    ///             <description>
+    ///                 Thrown when <paramref name="byteIndex" /> is less than zero.
+    ///             </description>
     ///         </item>
     ///         <item>
-    ///             <paramref name="byteCount" /> is less than zero.
+    ///             <description>
+    ///                 Thrown when <paramref name="byteCount" /> is less than zero.
+    ///             </description>
     ///         </item>
     ///         <item>
-    ///             <paramref name="charIndex" /> is less than zero.
+    ///             <description>
+    ///                 Thrown when <paramref name="charIndex" /> is less than zero.
+    ///             </description>
     ///         </item>
     ///         <item>
-    ///             <paramref name="byteIndex" /> and <paramref name="byteCount" /> taken
-    ///             together lie outside of the <paramref name="bytes" /> array.
+    ///             <description>
+    ///                 Thrown when <paramref name="byteIndex" /> and
+    ///                 <paramref name="byteCount" /> taken together lie outside of the
+    ///                 <paramref name="bytes" /> array.
+    ///             </description>
     ///         </item>
     ///         <item>
-    ///             <paramref name="charIndex" /> lies ouside of <paramref name="chars" />.
+    ///             <description>
+    ///                 Thrown when <paramref name="charIndex" /> lies ouside of
+    ///                 <paramref name="chars" />.
+    ///             </description>
     ///         </item>
     ///     </list>
     /// </exception>
     /// <exception cref="DecoderFallbackException">
-    ///     A fallback occurs while <see cref="Decoder.Fallback" /> is set to
+    ///     Thrown when a fallback occurs while <see cref="Decoder.Fallback" /> is set to
     ///     <see cref="DecoderFallbackException" />.
     /// </exception>
     sealed public override unsafe int GetChars(byte[] bytes, int byteIndex, int byteCount
@@ -474,12 +544,16 @@ public abstract class RuneDecoder : Decoder
     /// <param name="flush">
     ///     <list type="bullet">
     ///         <item>
-    ///             <see langword="true" /> — Any trailing bytes will be flushed as a decoding
-    ///             error.
+    ///             <description>
+    ///                 <see langword="true" /> — Any trailing bytes will be flushed as a
+    ///                 decoding error.
+    ///             </description>
     ///         </item>
     ///         <item>
-    ///             <see langword="false" /> — Any trailing bytes will be seen as the beginning
-    ///             bytes of the next decoding operation.
+    ///             <description>
+    ///                 <see langword="false" /> — Any trailing bytes will be seen as the
+    ///                 beginning bytes of the next decoding operation.
+    ///             </description>
     ///         </item>
     ///     </list>
     /// </param>
@@ -489,12 +563,14 @@ public abstract class RuneDecoder : Decoder
     /// <exception cref="ArgumentOutOfRangeException">
     ///     <list>
     ///         <item>
-    ///             <paramref name="byteCount" /> is less than zero.
+    ///             <description>
+    ///                 Thrown when <paramref name="byteCount" /> is less than zero.
+    ///             </description>
     ///         </item>
     ///     </list>
     /// </exception>
     /// <exception cref="DecoderFallbackException">
-    ///     A fallback occurs while <see cref="Decoder.Fallback" /> is set to
+    ///     Thrown when a fallback occurs while <see cref="Decoder.Fallback" /> is set to
     ///     <see cref="DecoderFallbackException" />.
     /// </exception>
     sealed public override unsafe int GetChars(byte* bytes, int byteCount, char* chars
@@ -572,17 +648,25 @@ public abstract class RuneDecoder : Decoder
     /// <param name="isBMP">
     ///     <list type="bullet">
     ///         <item>
-    ///             <see langword="true" /> — The assessed scalar value lies within the BMP and
-    ///             is therefore represented by a single <see cref="System.Char" /> value.
+    ///             <description>
+    ///                 <see langword="true" /> — The assessed scalar value lies within the BMP
+    ///                 and is therefore represented by a single <see cref="System.Char" />
+    ///                 value.
+    ///             </description>
     ///         </item>
     ///         <item>
-    ///             <see langword="false" /> — The assessed scalar value lies outside of the BMP
-    ///             and is therefore represented by two <see cref="System.Char" /> values.
+    ///             <description>
+    ///                 <see langword="false" /> — The assessed scalar value lies outside of the
+    ///                 BMP and is therefore represented by two <see cref="System.Char" />
+    ///                 values.
+    ///             </description>
     ///         </item>
     ///         <item>
-    ///             <see langword="null" /> — The provided byte sequence was exhausted
-    ///             (according to <paramref name="count" />) before the scalar value could be
-    ///             assessed.
+    ///             <description>
+    ///                 <see langword="null" /> — The provided byte sequence was exhausted
+    ///                 (according to <paramref name="count" />) before the scalar value could
+    ///                 be assessed.
+    ///             </description>
     ///         </item>
     ///     </list>
     /// </param>
@@ -605,8 +689,8 @@ public abstract class RuneDecoder : Decoder
     ///     The decoded scalar value, which should lie within either of the following inclusive
     ///     ranges:
     ///     <list type="bullet">
-    ///         <item><pre>U+0000</pre> - <pre>U+D7FF</pre></item>
-    ///         <item><pre>U+E000</pre> - <pre>U+10FFFF</pre></item>
+    ///         <item><description><pre>U+0000</pre> - <pre>U+D7FF</pre></description></item>
+    ///         <item><description><pre>U+E000</pre> - <pre>U+10FFFF</pre></description></item>
     ///     </list>
     ///     This parameter should be set to <see langword="null" /> if the provided byte
     ///     sequence is exhausted (according to <paramref name="count" />) before the scalar
