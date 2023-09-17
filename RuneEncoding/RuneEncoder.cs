@@ -19,7 +19,7 @@ namespace RuneEncoding;
 ///     Automatically handles the common aspects of character encoding, such as surrogate
 ///     composition, thereby allowing implementers to worry about specific concerns only.
 /// </summary>
-public abstract class RuneEncoder : Encoder
+public abstract partial class RuneEncoder : Encoder
 {
     private char? HighSurrogate = null;
 
