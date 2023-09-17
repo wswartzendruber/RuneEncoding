@@ -26,7 +26,7 @@ public abstract partial class RuneDecoder : Decoder
     /// <summary>
     ///     Measures the number of characters that would be needed to decode any pending bytes
     ///     in the decoder state followed by a span of bytes. The decoder state <strong>is
-    ///     not</strong> modified.
+    ///     not</strong> modified. Trailing bytes can be counted as a decoding error.
     /// </summary>
     /// <param name="bytes">
     ///     The span of bytes to measure.
@@ -35,13 +35,13 @@ public abstract partial class RuneDecoder : Decoder
     ///     <list type="bullet">
     ///         <item>
     ///             <description>
-    ///                 <see langword="true" /> — Any trailing bytes will be flushed as a
+    ///                 <see langword="true" /> — Any trailing bytes will be counted as a
     ///                 decoding error.
     ///             </description>
     ///         </item>
     ///         <item>
     ///             <description>
-    ///                 <see langword="false" /> — Any trailing bytes will be seen as the
+    ///                 <see langword="false" /> — Any trailing bytes will be considered the
     ///                 beginning bytes of the next decoding operation.
     ///             </description>
     ///         </item>
@@ -63,7 +63,7 @@ public abstract partial class RuneDecoder : Decoder
     /// <summary>
     ///     Measures the number of characters that would be needed to decode any pending bytes
     ///     in the decoder state followed by an array of bytes. The decoder state <strong>is
-    ///     not</strong> modified.
+    ///     not</strong> modified. Trailing bytes will not be counted as a decoding error.
     /// </summary>
     /// <param name="bytes">
     ///     The array of bytes to measure.
@@ -76,7 +76,7 @@ public abstract partial class RuneDecoder : Decoder
     /// </param>
     /// <returns>
     ///     The number of characters that would be needed to decode any pending bytes in the
-    ///     decoder state followed by an array of bytes.
+    ///     decoder state followed by the array of bytes.
     /// </returns>
     /// <exception cref="ArgumentNullException">
     ///     <list type="bullet">
@@ -113,7 +113,7 @@ public abstract partial class RuneDecoder : Decoder
     /// <summary>
     ///     Measures the number of characters that would be needed to decode any pending bytes
     ///     in the decoder state followed by an array of bytes. The decoder state <strong>is
-    ///     not</strong> modified.
+    ///     not</strong> modified. Trailing bytes can be counted as a decoding error.
     /// </summary>
     /// <param name="bytes">
     ///     The array of bytes to measure.
@@ -128,13 +128,13 @@ public abstract partial class RuneDecoder : Decoder
     ///     <list type="bullet">
     ///         <item>
     ///             <description>
-    ///                 <see langword="true" /> — Any trailing bytes will be flushed as a
+    ///                 <see langword="true" /> — Any trailing bytes will be counted as a
     ///                 decoding error.
     ///             </description>
     ///         </item>
     ///         <item>
     ///             <description>
-    ///                 <see langword="false" /> — Any trailing bytes will be seen as the
+    ///                 <see langword="false" /> — Any trailing bytes will be considered the
     ///                 beginning bytes of the next decoding operation.
     ///             </description>
     ///         </item>
@@ -142,7 +142,7 @@ public abstract partial class RuneDecoder : Decoder
     /// </param>
     /// <returns>
     ///     The number of characters that would be needed to decode any pending bytes in the
-    ///     decoder state followed by an array of bytes.
+    ///     decoder state followed by the array of bytes.
     /// </returns>
     /// <exception cref="ArgumentNullException">
     ///     <list type="bullet">
@@ -199,7 +199,7 @@ public abstract partial class RuneDecoder : Decoder
     /// <summary>
     ///     Measures the number of characters that would be needed to decode any pending bytes
     ///     in the decoder state followed by a sequence of bytes. The decoder state <strong>is
-    ///     not</strong> modified.
+    ///     not</strong> modified. Trailing bytes can be counted as a decoding error.
     /// </summary>
     /// <param name="bytes">
     ///     A pointer to the first byte in a sequence of bytes to measure.
@@ -211,13 +211,13 @@ public abstract partial class RuneDecoder : Decoder
     ///     <list type="bullet">
     ///         <item>
     ///             <description>
-    ///                 <see langword="true" /> — Any trailing bytes will be flushed as a
+    ///                 <see langword="true" /> — Any trailing bytes will be counted as a
     ///                 decoding error.
     ///             </description>
     ///         </item>
     ///         <item>
     ///             <description>
-    ///                 <see langword="false" /> — Any trailing bytes will be seen as the
+    ///                 <see langword="false" /> — Any trailing bytes will be considered the
     ///                 beginning bytes of the next decoding operation.
     ///             </description>
     ///         </item>
@@ -225,7 +225,7 @@ public abstract partial class RuneDecoder : Decoder
     /// </param>
     /// <returns>
     ///     The number of characters that would be needed to decode any pending bytes in the
-    ///     decoder state followed by an array of bytes.
+    ///     decoder state followed by the sequence of bytes.
     /// </returns>
     /// <exception cref="ArgumentOutOfRangeException">
     ///     <list type="bullet">

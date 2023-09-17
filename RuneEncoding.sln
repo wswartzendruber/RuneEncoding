@@ -5,9 +5,9 @@ VisualStudioVersion = 16.0.30114.105
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RuneEncoding", "RuneEncoding\RuneEncoding.csproj", "{1D08D39E-2ED9-4140-84F8-9DEE920B1A73}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RuneEncoding.Tests.netstandard2.0", "RuneEncoding.Tests\RuneEncoding.Tests.netstandard2.0.csproj", "{D9600957-953C-4E1F-93FE-EADBEC4492E6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RuneEncoding.Tests.netstandard2_0", "RuneEncoding.Tests\RuneEncoding.Tests.netstandard2_0.csproj", "{D9600957-953C-4E1F-93FE-EADBEC4492E6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RuneEncoding.Tests.netstandard2.1", "RuneEncoding.Tests\RuneEncoding.Tests.netstandard2.1.csproj", "{2B1864B8-FDD3-4537-8FCC-89CB9B4F9708}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RuneEncoding.Tests.netstandard2_1", "RuneEncoding.Tests\RuneEncoding.Tests.netstandard2_1.csproj", "{2B1864B8-FDD3-4537-8FCC-89CB9B4F9708}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
