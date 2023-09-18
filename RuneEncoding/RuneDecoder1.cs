@@ -198,11 +198,11 @@ public abstract partial class RuneDecoder : Decoder
 
     /// <summary>
     ///     Measures the number of characters that would be needed to decode any pending bytes
-    ///     in the decoder state followed by a sequence of bytes. The decoder state <strong>is
+    ///     in the decoder state followed by a buffer of bytes. The decoder state <strong>is
     ///     not</strong> modified. Trailing bytes can be counted as a decoding error.
     /// </summary>
     /// <param name="bytes">
-    ///     A pointer to the first byte in a sequence of bytes to measure.
+    ///     A pointer to the first byte in a buffer of bytes to measure.
     /// </param>
     /// <param name="count">
     ///     The number of bytes to measure.
@@ -225,7 +225,7 @@ public abstract partial class RuneDecoder : Decoder
     /// </param>
     /// <returns>
     ///     The number of characters that would be needed to decode any pending bytes in the
-    ///     decoder state followed by the sequence of bytes.
+    ///     decoder state followed by the buffer of bytes.
     /// </returns>
     /// <exception cref="ArgumentOutOfRangeException">
     ///     <list type="bullet">
@@ -273,8 +273,8 @@ public abstract partial class RuneDecoder : Decoder
     }
 
     /// <summary>
-    ///     Attempts to determine if the encoded scalar value at the start of a byte sequence
-    ///     lies within the Basic Multilingual Plane.
+    ///     Attempts to determine if the encoded scalar value at the start of a byte buffer lies
+    ///     within the Basic Multilingual Plane.
     /// </summary>
     /// <param name="bytes">
     ///     A pointer to the first byte of the encoded scalar value.
@@ -307,7 +307,7 @@ public abstract partial class RuneDecoder : Decoder
     ///         </item>
     ///         <item>
     ///             <description>
-    ///                 <see langword="null" /> — The provided byte sequence was exhausted
+    ///                 <see langword="null" /> — The provided byte buffer was exhausted
     ///                 (according to <paramref name="count" />) before the scalar value could
     ///                 be assessed.
     ///             </description>
