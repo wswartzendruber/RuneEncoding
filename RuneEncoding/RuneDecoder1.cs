@@ -12,6 +12,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace RuneEncoding;
@@ -242,33 +243,30 @@ public abstract partial class RuneDecoder : Decoder
             throw new ArgumentOutOfRangeException("The count parameter is less than zero.");
 
         var returnValue = 0;
-        var currentIndex = 0;
+        var index = 0;
         var first = true;
-        bool? isBMP;
+        bool? isBmp;
 
         while (true)
         {
-            var limit = count - currentIndex;
-            var bytesRead = AssessScalarValue(bytes + currentIndex, limit, first, out isBMP);
+            var limit = count - index;
+            var bytesRead = AssessScalarValue(bytes + index, limit, first, out isBmp);
 
             first = false;
-            currentIndex += bytesRead;
 
-            if (isBMP is bool isBMP_)
+            if (isBmp is bool isBmp_)
             {
-                returnValue += (isBMP_ == true) ? 1 : 2;
+                returnValue += isBmp_ ? 1 : 2;
             }
             else
             {
-                if (flush == true && bytesRead > 0)
-                {
-                    // TODO: Get Fallback chars
-
-                    Reset();
-                }
+                if (flush && bytesRead > 0)
+                    returnValue += GetFallbackChars(bytes + index, limit).Length;
 
                 return returnValue;
             }
+
+            index += bytesRead;
         }
     }
 
@@ -279,7 +277,7 @@ public abstract partial class RuneDecoder : Decoder
     /// <param name="bytes">
     ///     A pointer to the first byte of the encoded scalar value.
     /// </param>
-    /// <param name="count">
+    /// <param name="limit">
     ///     The maximum number of bytes to read in order to assess the scalar value.
     /// </param>
     /// <param name="first">
@@ -289,7 +287,7 @@ public abstract partial class RuneDecoder : Decoder
     ///     may be trailing bytes left over from the last invocation of
     ///     <see cref="o:System.Text.Decoder.GetChars" />.
     /// </param>
-    /// <param name="isBMP">
+    /// <param name="isBmp">
     ///     <list type="bullet">
     ///         <item>
     ///             <description>
@@ -308,7 +306,7 @@ public abstract partial class RuneDecoder : Decoder
     ///         <item>
     ///             <description>
     ///                 <see langword="null" /> — The provided byte buffer was exhausted
-    ///                 (according to <paramref name="count" />) before the scalar value could
+    ///                 (according to <paramref name="limit" />) before the scalar value could
     ///                 be assessed.
     ///             </description>
     ///         </item>
@@ -317,6 +315,27 @@ public abstract partial class RuneDecoder : Decoder
     /// <returns>
     ///     The number of bytes read attempting to assess the scalar value.
     /// </returns>
-    protected abstract unsafe int AssessScalarValue(byte* bytes, int count, bool first
-        , out bool? isBMP);
+    protected abstract unsafe int AssessScalarValue(byte* bytes, int limit, bool first
+        , out bool? isBmp);
+
+    private unsafe char[] GetFallbackChars(byte* buffer, int count)
+    {
+        var fallbackChars = new List<char>();
+        var errorBuffer = new byte[count];
+        var fallbackBuffer = FallbackBuffer;
+
+        Marshal.Copy((nint)buffer, errorBuffer, 0, count);
+
+        if (fallbackBuffer.Fallback(errorBuffer, 0))
+        {
+            while (fallbackBuffer.Remaining > 0)
+                fallbackChars.Add(fallbackBuffer.GetNextChar());
+        }
+        else
+        {
+            fallbackChars.Add(Constants.ReplacementChar);
+        }
+
+        return fallbackChars.ToArray();
+    }
 }
