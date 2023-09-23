@@ -12,15 +12,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Text;
 
 namespace RuneEncoding;
 
-/// <summary>
-///     Automatically handles the common aspects of character decoding, such as surrogate
-///     decomposition, thereby allowing implementers to worry about specific concerns only.
-/// </summary>
 public abstract partial class RuneDecoder : Decoder
 {
 #if NETSTANDARD2_1_OR_GREATER
@@ -317,25 +312,4 @@ public abstract partial class RuneDecoder : Decoder
     /// </returns>
     protected abstract unsafe int AssessScalarValue(byte* bytes, int limit, bool first
         , out bool? isBmp);
-
-    private unsafe char[] GetFallbackChars(byte* buffer, int count)
-    {
-        var fallbackChars = new List<char>();
-        var errorBuffer = new byte[count];
-        var fallbackBuffer = FallbackBuffer;
-
-        Marshal.Copy((nint)buffer, errorBuffer, 0, count);
-
-        if (fallbackBuffer.Fallback(errorBuffer, 0))
-        {
-            while (fallbackBuffer.Remaining > 0)
-                fallbackChars.Add(fallbackBuffer.GetNextChar());
-        }
-        else
-        {
-            fallbackChars.Add(Constants.ReplacementChar);
-        }
-
-        return fallbackChars.ToArray();
-    }
 }
