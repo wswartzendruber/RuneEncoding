@@ -198,7 +198,7 @@ public abstract partial class RuneDecoder : Decoder
     ///     not</strong> modified. Trailing bytes can be counted as a decoding error.
     /// </summary>
     /// <param name="bytes">
-    ///     A pointer to the first byte in a buffer of bytes to measure.
+    ///     A pointer to the first byte in the buffer of bytes to measure.
     /// </param>
     /// <param name="count">
     ///     The number of bytes to measure.

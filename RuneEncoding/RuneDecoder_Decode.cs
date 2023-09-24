@@ -41,15 +41,25 @@ public abstract partial class RuneDecoder : Decoder
     ///         </item>
     ///         <item>
     ///             <description>
-    ///                 <see langword="false" /> — Any trailing bytes will be seen as the
+    ///                 <see langword="false" /> — Any trailing bytes will be buffered as the
     ///                 beginning bytes of the next decoding operation.
     ///             </description>
     ///         </item>
     ///     </list>
     /// </param>
     /// <returns>
-    ///     The number of characters written.
+    ///     The number of characters decoded.
     /// </returns>
+    /// <exception cref="ArgumentException">
+    ///     <list>
+    ///         <item>
+    ///             <description>
+    ///                 Thrown when the character span is too small to hold the decoded
+    ///                 characters.
+    ///             </description>
+    ///         </item>
+    ///     </list>
+    /// </exception>
     /// <exception cref="DecoderFallbackException">
     ///     Thrown when a fallback occurs while <see cref="Decoder.Fallback" /> is set to
     ///     <see cref="DecoderFallbackException" />.
@@ -85,8 +95,18 @@ public abstract partial class RuneDecoder : Decoder
     ///     The index at which to start writing the decoded characters.
     /// </param>
     /// <returns>
-    ///     The number of characters written.
+    ///     The number of characters decoded.
     /// </returns>
+    /// <exception cref="ArgumentException">
+    ///     <list>
+    ///         <item>
+    ///             <description>
+    ///                 Thrown when the character array is too small to hold the decoded
+    ///                 characters.
+    ///             </description>
+    ///         </item>
+    ///     </list>
+    /// </exception>
     /// <exception cref="ArgumentNullException">
     ///     <list>
     ///         <item>
@@ -121,8 +141,8 @@ public abstract partial class RuneDecoder : Decoder
     ///         <item>
     ///             <description>
     ///                 Thrown when <paramref name="byteIndex" /> and
-    ///                 <paramref name="byteCount" /> taken together lie outside of the
-    ///                 <paramref name="bytes" /> array.
+    ///                 <paramref name="byteCount" /> taken together lie outside of
+    ///                 <paramref name="bytes" />.
     ///             </description>
     ///         </item>
     ///         <item>
@@ -170,15 +190,25 @@ public abstract partial class RuneDecoder : Decoder
     ///         </item>
     ///         <item>
     ///             <description>
-    ///                 <see langword="false" /> — Any trailing bytes will be seen as the
+    ///                 <see langword="false" /> — Any trailing bytes will be buffered as the
     ///                 beginning bytes of the next decoding operation.
     ///             </description>
     ///         </item>
     ///     </list>
     /// </param>
     /// <returns>
-    ///     The number of characters written.
+    ///     The number of characters decoded.
     /// </returns>
+    /// <exception cref="ArgumentException">
+    ///     <list>
+    ///         <item>
+    ///             <description>
+    ///                 Thrown when the character array is too small to hold the decoded
+    ///                 characters.
+    ///             </description>
+    ///         </item>
+    ///     </list>
+    /// </exception>
     /// <exception cref="ArgumentNullException">
     ///     <list>
     ///         <item>
@@ -213,8 +243,8 @@ public abstract partial class RuneDecoder : Decoder
     ///         <item>
     ///             <description>
     ///                 Thrown when <paramref name="byteIndex" /> and
-    ///                 <paramref name="byteCount" /> taken together lie outside of the
-    ///                 <paramref name="bytes" /> array.
+    ///                 <paramref name="byteCount" /> taken together lie outside of
+    ///                 <paramref name="bytes" />.
     ///             </description>
     ///         </item>
     ///         <item>
@@ -268,11 +298,11 @@ public abstract partial class RuneDecoder : Decoder
     }
 
     /// <summary>
-    ///     Decodes any pending bytes in the decoder state followed by a sequence of bytes. The
+    ///     Decodes any pending bytes in the decoder state followed by a buffer of bytes. The
     ///     decoder state <strong>is</strong> modified.
     /// </summary>
     /// <param name="bytes">
-    ///     A pointer to the first byte in a sequence of bytes to decode.
+    ///     A pointer to the first byte in the buffer of bytes to decode.
     /// </param>
     /// <param name="byteCount">
     ///     The number of bytes to decode.
@@ -293,20 +323,49 @@ public abstract partial class RuneDecoder : Decoder
     ///         </item>
     ///         <item>
     ///             <description>
-    ///                 <see langword="false" /> — Any trailing bytes will be seen as the
+    ///                 <see langword="false" /> — Any trailing bytes will be buffered as the
     ///                 beginning bytes of the next decoding operation.
     ///             </description>
     ///         </item>
     ///     </list>
     /// </param>
     /// <returns>
-    ///     The number of characters written.
+    ///     The number of characters decoded.
     /// </returns>
+    /// <exception cref="ArgumentException">
+    ///     <list>
+    ///         <item>
+    ///             <description>
+    ///                 Thrown when the character buffer is too small to hold the decoded
+    ///                 characters.
+    ///             </description>
+    ///         </item>
+    ///     </list>
+    /// </exception>
+    /// <exception cref="ArgumentNullException">
+    ///     <list>
+    ///         <item>
+    ///             <description>
+    ///                 Thrown when <paramref name="bytes" /> is <see langword="null" />.
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 Thrown when <paramref name="chars" /> is <see langword="null" />.
+    ///             </description>
+    ///         </item>
+    ///     </list>
+    /// </exception>
     /// <exception cref="ArgumentOutOfRangeException">
     ///     <list>
     ///         <item>
     ///             <description>
     ///                 Thrown when <paramref name="byteCount" /> is less than zero.
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 Thrown when <paramref name="charCount" /> is less than zero.
     ///             </description>
     ///         </item>
     ///     </list>
@@ -318,6 +377,10 @@ public abstract partial class RuneDecoder : Decoder
     public sealed override unsafe int GetChars(byte* bytes, int byteCount, char* chars
         , int charCount, bool flush)
     {
+        if (bytes is null)
+            throw new ArgumentNullException("The bytes parameter is null.");
+        if (chars is null)
+            throw new ArgumentNullException("The chars parameter is null.");
         if (byteCount < 0)
             throw new ArgumentOutOfRangeException("The byteCount parameter is less than zero.");
         if (charCount < 0)
@@ -377,7 +440,7 @@ public abstract partial class RuneDecoder : Decoder
         ResetState();
 
     /// <summary>
-    ///     Attempts to decode the scalar value at the start of a byte sequence.
+    ///     Attempts to decode the scalar value at the start of a byte buffer.
     /// </summary>
     /// <param name="bytes">
     ///     A pointer to the first byte of the encoded scalar value.
@@ -393,8 +456,8 @@ public abstract partial class RuneDecoder : Decoder
     ///         <item><description><pre>U+E000</pre> - <pre>U+10FFFF</pre></description></item>
     ///     </list>
     ///     This parameter should be set to <see langword="null" /> if the provided byte
-    ///     sequence is exhausted (according to <paramref name="count" />) before the scalar
-    ///     value could be can be decoded.
+    ///     buffer is exhausted (according to <paramref name="count" />) before the scalar value
+    ///     could be can be decoded.
     /// </param>
     /// <returns>
     ///     The number of bytes read attempting to decode the scalar value.
