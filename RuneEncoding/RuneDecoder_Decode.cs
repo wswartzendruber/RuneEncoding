@@ -18,7 +18,7 @@ namespace RuneEncoding;
 public abstract partial class RuneDecoder : Decoder
 {
     private static readonly IndexOutOfRangeException CharCountExceededException
-        = new("Insufficient space for decoded characters.");
+        = new("Character store is too small to hold the decoded characters.");
 
 #if NETSTANDARD2_1_OR_GREATER
     /// <summary>
@@ -386,14 +386,13 @@ public abstract partial class RuneDecoder : Decoder
         if (charCount < 0)
             throw new ArgumentOutOfRangeException("The charCount parameter is less than zero.");
 
-        int currentByteIndex = 0;
-        int currentCharIndex = 0;
+        int byteIndex = 0;
+        int charIndex = 0;
 
-        while (currentByteIndex < byteCount)
+        while (true)
         {
-            var byteLimit = byteCount - currentByteIndex;
-
-            currentByteIndex += DecodeScalarValue(bytes + currentByteIndex, byteLimit
+            var byteLimit = byteCount - byteIndex;
+            var bytesRead = DecodeScalarValue(bytes + byteIndex, byteLimit
                 , out int? scalarValue);
 
             if (scalarValue is int scalarValue_)
@@ -401,36 +400,39 @@ public abstract partial class RuneDecoder : Decoder
                 if ((0 <= scalarValue_ && scalarValue_ <= 0xD7FF)
                     || (0xE000 <= scalarValue_ && scalarValue_ <= 0xFFFF))
                 {
-                    if (currentCharIndex < charCount)
-                        chars[currentCharIndex++] = (char)scalarValue_;
+                    if (charIndex < charCount)
+                        chars[charIndex++] = (char)scalarValue_;
                     else
                         throw CharCountExceededException;
                 }
                 else if (0x010000 <= scalarValue && scalarValue <= 0x10FFFF)
                 {
-                    if (currentCharIndex < charCount)
-                        chars[currentCharIndex++] = HighSurrogate(scalarValue_);
+                    if (charIndex < charCount)
+                        chars[charIndex++] = HighSurrogate(scalarValue_);
                     else
                         throw CharCountExceededException;
 
-                    if (currentCharIndex < charCount)
-                        chars[currentCharIndex++] = LowSurrogate(scalarValue_);
+                    if (charIndex < charCount)
+                        chars[charIndex++] = LowSurrogate(scalarValue_);
                     else
                         throw CharCountExceededException;
                 }
                 else
                 {
-                    if (currentCharIndex < charCount)
-                        chars[currentCharIndex++] = Constants.ReplacementChar;
-                    else
-                        throw CharCountExceededException;
+                    throw new InvalidOperationException(
+                        "Implementation returned an invalid scalar value.");
                 }
             }
+            else
+            {
+                if (flush && bytesRead > 0)
+                {
+                    // TODO: Fallback
+                }
+
+                return charIndex;
+            }
         }
-
-        // TODO: Handle error flushing.
-
-        return currentCharIndex;
     }
 
     /// <summary>
@@ -445,7 +447,7 @@ public abstract partial class RuneDecoder : Decoder
     /// <param name="bytes">
     ///     A pointer to the first byte of the encoded scalar value.
     /// </param>
-    /// <param name="count">
+    /// <param name="limit">
     ///     The maximum number of bytes to read in order to decode the scalar value.
     /// </param>
     /// <param name="scalarValue">
@@ -456,13 +458,13 @@ public abstract partial class RuneDecoder : Decoder
     ///         <item><description><pre>U+E000</pre> - <pre>U+10FFFF</pre></description></item>
     ///     </list>
     ///     This parameter should be set to <see langword="null" /> if the provided byte
-    ///     buffer is exhausted (according to <paramref name="count" />) before the scalar value
+    ///     buffer is exhausted (according to <paramref name="limit" />) before the scalar value
     ///     could be can be decoded.
     /// </param>
     /// <returns>
     ///     The number of bytes read attempting to decode the scalar value.
     /// </returns>
-    protected abstract unsafe int DecodeScalarValue(byte* bytes, int count
+    protected abstract unsafe int DecodeScalarValue(byte* bytes, int limit
         , out int? scalarValue);
 
     /// <summary>

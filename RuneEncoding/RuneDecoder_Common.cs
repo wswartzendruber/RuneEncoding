@@ -22,7 +22,7 @@ namespace RuneEncoding;
 /// </summary>
 public abstract partial class RuneDecoder : Decoder
 {
-    private unsafe char[] GetFallbackChars(byte* buffer, int count)
+    protected unsafe char[] GetFallbackChars(byte* buffer, int count)
     {
         var fallbackChars = new List<char>();
         var errorBuffer = new byte[count];
