@@ -17,7 +17,7 @@ namespace RuneEncoding;
 
 public abstract partial class RuneDecoder : Decoder
 {
-    private static readonly IndexOutOfRangeException CharCountExceededException
+    private static readonly ArgumentException CharCountExceededException
         = new("Character store is too small to hold the decoded characters.");
 
 #if NETSTANDARD2_1_OR_GREATER
@@ -427,11 +427,21 @@ public abstract partial class RuneDecoder : Decoder
             {
                 if (flush && bytesRead > 0)
                 {
-                    // TODO: Fallback
+                    var fallbackChars = GetFallbackChars(bytes + byteIndex, byteLimit);
+
+                    foreach (var fallbackChar in fallbackChars)
+                    {
+                        if (charIndex < charCount)
+                            chars[charIndex++] = fallbackChar;
+                        else
+                            throw CharCountExceededException;
+                    }
                 }
 
                 return charIndex;
             }
+
+            byteIndex += bytesRead;
         }
     }
 
