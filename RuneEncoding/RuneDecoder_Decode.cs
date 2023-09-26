@@ -264,11 +264,11 @@ public abstract partial class RuneDecoder : Decoder
     {
         if (bytes is null)
         {
-            throw new ArgumentNullException("The bytes parameter is null.");
+            throw new ArgumentNullException("bytes");
         }
         if (chars is null)
         {
-            throw new ArgumentNullException("The chars parameter is null.");
+            throw new ArgumentNullException("chars");
         }
         if (byteIndex < 0)
         {
@@ -378,9 +378,9 @@ public abstract partial class RuneDecoder : Decoder
         , int charCount, bool flush)
     {
         if (bytes is null)
-            throw new ArgumentNullException("The bytes parameter is null.");
+            throw new ArgumentNullException("bytes");
         if (chars is null)
-            throw new ArgumentNullException("The chars parameter is null.");
+            throw new ArgumentNullException("chars");
         if (byteCount < 0)
             throw new ArgumentOutOfRangeException("The byteCount parameter is less than zero.");
         if (charCount < 0)
