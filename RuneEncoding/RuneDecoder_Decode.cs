@@ -416,7 +416,7 @@ public abstract partial class RuneDecoder : Decoder
                     else
                         throw CharCountExceededException;
                 }
-                else if (0x010000 <= scalarValue && scalarValue <= 0x10FFFF)
+                else if (0x010000 <= scalarValue_ && scalarValue_ <= 0x10FFFF)
                 {
                     if (charIndex < charCount)
                         chars[charIndex++] = HighSurrogate(scalarValue_);
@@ -431,7 +431,7 @@ public abstract partial class RuneDecoder : Decoder
                 else
                 {
                     throw new InvalidOperationException(
-                        "Implementation returned an invalid scalar value.");
+                        $"Implementation returned an invalid scalar value ({scalarValue_}).");
                 }
             }
             else

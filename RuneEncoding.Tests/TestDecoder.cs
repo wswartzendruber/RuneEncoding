@@ -127,6 +127,10 @@ public class TestDecoder : RuneDecoder
                     scalarValue = (Buffer[0] << 16) | (Buffer[1] << 8) | bytes[byteIndex];
                     DecodeBytes.Add(bytes[byteIndex]);
                     BufferIndex = 0;
+                    if (0xD800 <= scalarValue && scalarValue <= 0xDFFF)
+                        scalarValue = 0;
+                    else if (0x10FFFF < scalarValue)
+                        scalarValue = 0x10FFFF;
                     return bytesRead;
                 default:
                     throw new InvalidOperationException("Internal state is irrational.");
