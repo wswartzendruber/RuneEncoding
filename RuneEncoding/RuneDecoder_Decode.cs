@@ -292,7 +292,14 @@ public abstract partial class RuneDecoder : Decoder
         fixed (byte* pBytes = bytes)
         fixed (char* pChars = chars)
         {
-            return GetChars(pBytes + byteIndex, byteCount, pChars + charIndex
+            var rpBytes = (bytes.Length > 0)
+                ? pBytes
+                : (byte*)IntPtr.Size;
+            var rpChars = (chars.Length > 0)
+                ? pChars
+                : (char*)IntPtr.Size;
+
+            return GetChars(rpBytes + byteIndex, byteCount, rpChars + charIndex
                 , chars.Length - charIndex, flush);
         }
     }

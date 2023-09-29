@@ -51,7 +51,11 @@ public abstract partial class RuneDecoder : Decoder
     {
         fixed (byte* pBytes = bytes)
         {
-            return GetCharCount(pBytes, bytes.Length, flush);
+            var rpBytes = (bytes.Length > 0)
+                ? pBytes
+                : (byte*)IntPtr.Size;
+
+            return GetCharCount(rpBytes, bytes.Length, flush);
         }
     }
 #endif
@@ -188,7 +192,11 @@ public abstract partial class RuneDecoder : Decoder
 
         fixed (byte* pBytes = bytes)
         {
-            return GetCharCount(pBytes + index, count, flush);
+            var rpBytes = (bytes.Length > 0)
+                ? pBytes
+                : (byte*)IntPtr.Size;
+
+            return GetCharCount(rpBytes + index, count, flush);
         }
     }
 
@@ -223,6 +231,15 @@ public abstract partial class RuneDecoder : Decoder
     ///     The number of characters that would be needed to decode any pending bytes in the
     ///     decoder state followed by the buffer of bytes.
     /// </returns>
+    /// <exception cref="ArgumentNullException">
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <description>
+    ///                 Thrown when <paramref name="bytes" /> is <see langword="null" />.
+    ///             </description>
+    ///         </item>
+    ///     </list>
+    /// </exception>
     /// <exception cref="ArgumentOutOfRangeException">
     ///     <list type="bullet">
     ///         <item>
@@ -234,6 +251,8 @@ public abstract partial class RuneDecoder : Decoder
     /// </exception>
     public sealed override unsafe int GetCharCount(byte* bytes, int count, bool flush)
     {
+        if (bytes is null)
+            throw new ArgumentNullException("The bytes parameter is null.");
         if (count < 0)
             throw new ArgumentOutOfRangeException("The count parameter is less than zero.");
 
