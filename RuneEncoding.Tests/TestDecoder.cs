@@ -79,15 +79,10 @@ public class TestDecoder : RuneDecoder
                     var scalarValue = (buffer[0] << 16) | (buffer[1] << 8) | bytes[byteIndex];
                     CountBytes.Add(bytes[byteIndex]);
                     bufferIndex = 0;
-                    if ((0x00 <= scalarValue && scalarValue <= 0xFFFF)
-                        || (0x110000 <= scalarValue))
-                    {
+                    if (0x00 <= scalarValue && scalarValue <= 0xFFFF)
                         isBMP = true;
-                    }
                     else
-                    {
                         isBMP = false;
-                    }
                     return bytesRead;
                 default:
                     throw new InvalidOperationException("Internal state is irrational.");
@@ -128,7 +123,7 @@ public class TestDecoder : RuneDecoder
                     DecodeBytes.Add(bytes[byteIndex]);
                     BufferIndex = 0;
                     if (0xD800 <= scalarValue && scalarValue <= 0xDFFF)
-                        scalarValue = 0;
+                        scalarValue = 0xFFFD;
                     else if (0x10FFFF < scalarValue)
                         scalarValue = 0x10FFFF;
                     return bytesRead;

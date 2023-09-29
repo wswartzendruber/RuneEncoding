@@ -64,6 +64,6 @@ public class RuneDecoderTests
             Assert.True(runeValues[i] == i);
 
         for (int i = 0x110000; i < 0x1000000; i++)
-            Assert.True(runeValues[i] == 0xFFFD);
+            Assert.True(runeValues[i] == 0x10FFFF);
     }
 }
