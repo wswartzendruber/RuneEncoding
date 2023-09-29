@@ -23,7 +23,8 @@ public abstract partial class RuneDecoder : Decoder
 #if NETSTANDARD2_1_OR_GREATER
     /// <summary>
     ///     Decodes any pending bytes in the decoder state followed by a span of bytes. The
-    ///     decoder state <strong>is</strong> modified.
+    ///     decoder state <strong>is</strong> modified. Trailing bytes can be buffered for the
+    ///     next decoding operation.
     /// </summary>
     /// <param name="bytes">
     ///     The span of bytes to decode.
@@ -77,7 +78,8 @@ public abstract partial class RuneDecoder : Decoder
 
     /// <summary>
     ///     Decodes any pending bytes in the decoder state followed by an array of bytes. The
-    ///     decoder state <strong>is</strong> modified.
+    ///     decoder state <strong>is</strong> modified. Trailing bytes will be buffered for the
+    ///     next decoding operation.
     /// </summary>
     /// <param name="bytes">
     ///     The array of bytes to decode.
@@ -163,7 +165,8 @@ public abstract partial class RuneDecoder : Decoder
 
     /// <summary>
     ///     Decodes any pending bytes in the decoder state followed by an array of bytes. The
-    ///     decoder state <strong>is</strong> modified.
+    ///     decoder state <strong>is</strong> modified. Trailing bytes can be buffered for the
+    ///     next decoding operation.
     /// </summary>
     /// <param name="bytes">
     ///     The array of bytes to decode.
@@ -306,7 +309,8 @@ public abstract partial class RuneDecoder : Decoder
 
     /// <summary>
     ///     Decodes any pending bytes in the decoder state followed by a buffer of bytes. The
-    ///     decoder state <strong>is</strong> modified.
+    ///     decoder state <strong>is</strong> modified. Trailing bytes can be buffered for the
+    ///     next decoding operation.
     /// </summary>
     /// <param name="bytes">
     ///     A pointer to the first byte in the buffer of bytes to decode.

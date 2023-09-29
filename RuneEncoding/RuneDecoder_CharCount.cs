@@ -47,6 +47,10 @@ public abstract partial class RuneDecoder : Decoder
     ///     The number of characters that would be needed to decode any pending bytes in the
     ///     decoder state followed by the span of bytes.
     /// </returns>
+    /// <exception cref="DecoderFallbackException">
+    ///     Thrown when a fallback occurs while <see cref="Decoder.Fallback" /> is set to
+    ///     <see cref="DecoderFallbackException" />.
+    /// </exception>
     public sealed override unsafe int GetCharCount(ReadOnlySpan<byte> bytes, bool flush)
     {
         fixed (byte* pBytes = bytes)
@@ -106,6 +110,10 @@ public abstract partial class RuneDecoder : Decoder
     ///             </description>
     ///         </item>
     ///     </list>
+    /// </exception>
+    /// <exception cref="DecoderFallbackException">
+    ///     Thrown when a fallback occurs while <see cref="Decoder.Fallback" /> is set to
+    ///     <see cref="DecoderFallbackException" />.
     /// </exception>
     public sealed override int GetCharCount(byte[] bytes, int index, int count) =>
         GetCharCount(bytes, index, count, false);
@@ -172,6 +180,10 @@ public abstract partial class RuneDecoder : Decoder
     ///             </description>
     ///         </item>
     ///     </list>
+    /// </exception>
+    /// <exception cref="DecoderFallbackException">
+    ///     Thrown when a fallback occurs while <see cref="Decoder.Fallback" /> is set to
+    ///     <see cref="DecoderFallbackException" />.
     /// </exception>
     public sealed override unsafe int GetCharCount(byte[] bytes, int index, int count
         , bool flush)
@@ -248,6 +260,10 @@ public abstract partial class RuneDecoder : Decoder
     ///             </description>
     ///         </item>
     ///     </list>
+    /// </exception>
+    /// <exception cref="DecoderFallbackException">
+    ///     Thrown when a fallback occurs while <see cref="Decoder.Fallback" /> is set to
+    ///     <see cref="DecoderFallbackException" />.
     /// </exception>
     public sealed override unsafe int GetCharCount(byte* bytes, int count, bool flush)
     {
