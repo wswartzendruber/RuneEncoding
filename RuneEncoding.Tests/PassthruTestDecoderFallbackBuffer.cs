@@ -14,30 +14,18 @@ using System.Text;
 
 namespace RuneEncoding.Tests;
 
-public class CompoundTestEncoderFallbackBuffer : EncoderFallbackBuffer
+public class PassthruTestDecoderFallbackBuffer : DecoderFallbackBuffer
 {
     private readonly Queue<char> RemainingChars = new();
 
     public override int Remaining => RemainingChars.Count;
 
-    public override bool Fallback(char charUnknownHigh, char charUnknownLow, int index)
-    {
-        throw new NotImplementedException();
-    }
-
-    public override bool Fallback(char charUnknown, int index)
+    public override bool Fallback(byte[] bytesUnknown, int index)
     {
         RemainingChars.Clear();
 
-        if ((charUnknown & 0xF800) == 0xD800)
-        {
-            RemainingChars.Enqueue((char)(0xD800 | (charUnknown >> 8)));
-            RemainingChars.Enqueue((char)(0xDC00 | (charUnknown & 0xFF)));
-        }
-        else
-        {
-            throw new InvalidOperationException("Encountered non-surrogate as input.");
-        }
+        foreach (byte byteUnknown in bytesUnknown)
+            RemainingChars.Enqueue((char)byteUnknown);
 
         return true;
     }

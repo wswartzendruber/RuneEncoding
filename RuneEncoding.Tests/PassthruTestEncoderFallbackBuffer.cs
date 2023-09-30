@@ -18,9 +18,6 @@ public class PassthruTestEncoderFallbackBuffer : EncoderFallbackBuffer
 {
     private readonly Queue<char> RemainingChars = new();
 
-    private char CharUnknown = ' ';
-    private int Index = 0;
-
     public override int Remaining => RemainingChars.Count;
 
     public override bool Fallback(char charUnknownHigh, char charUnknownLow, int index)
@@ -30,9 +27,6 @@ public class PassthruTestEncoderFallbackBuffer : EncoderFallbackBuffer
 
     public override bool Fallback(char charUnknown, int index)
     {
-        CharUnknown = charUnknown;
-        Index = index;
-
         RemainingChars.Clear();
 
         if ((charUnknown & 0xF800) == 0xD800)
