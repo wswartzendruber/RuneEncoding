@@ -42,9 +42,9 @@ public class TestDecoder : RuneDecoder
     }
 
     protected override unsafe int AssessScalarValue(byte* bytes, int count, bool first
-        , out bool? isBMP)
+        , out bool? isBmp)
     {
-        isBMP = null;
+        isBmp = null;
 
         var buffer = new byte[2];
         var bufferIndex = first ? BufferIndex : 0;
@@ -62,14 +62,14 @@ public class TestDecoder : RuneDecoder
             {
                 case 0:
                     bytesRead++;
-                    isBMP = null;
+                    isBmp = null;
                     buffer[0] = bytes[byteIndex];
                     CountBytes.Add(bytes[byteIndex]);
                     bufferIndex = 1;
                     break;
                 case 1:
                     bytesRead++;
-                    isBMP = null;
+                    isBmp = null;
                     buffer[1] = bytes[byteIndex];
                     CountBytes.Add(bytes[byteIndex]);
                     bufferIndex = 2;
@@ -80,9 +80,9 @@ public class TestDecoder : RuneDecoder
                     CountBytes.Add(bytes[byteIndex]);
                     bufferIndex = 0;
                     if (0x00 <= scalarValue && scalarValue <= 0xFFFF)
-                        isBMP = true;
+                        isBmp = true;
                     else
-                        isBMP = false;
+                        isBmp = false;
                     return bytesRead;
                 default:
                     throw new InvalidOperationException("Internal state is irrational.");
