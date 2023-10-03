@@ -464,12 +464,6 @@ public abstract partial class RuneDecoder : Decoder
     }
 
     /// <summary>
-    ///     Resets the internal state of the decoder.
-    /// </summary>
-    public sealed override void Reset() =>
-        ResetState();
-
-    /// <summary>
     ///     Attempts to decode the scalar value at the start of a byte buffer.
     /// </summary>
     /// <param name="bytes">
@@ -494,11 +488,6 @@ public abstract partial class RuneDecoder : Decoder
     /// </returns>
     protected abstract unsafe int DecodeScalarValue(byte* bytes, int limit
         , out int? scalarValue);
-
-    /// <summary>
-    ///     Resets the implementation-specific state of the decoder.
-    /// </summary>
-    protected virtual void ResetState() { }
 
     private static char HighSurrogate(int scalarValue) =>
         (char)((((uint)scalarValue - 0x10000U) >> 10) + 0xD800);

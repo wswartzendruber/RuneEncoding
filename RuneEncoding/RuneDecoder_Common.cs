@@ -22,6 +22,16 @@ namespace RuneEncoding;
 /// </summary>
 public abstract partial class RuneDecoder : Decoder
 {
+    /// <summary>
+    ///     Resets the internal state of the decoder.
+    /// </summary>
+    public sealed override void Reset() => ResetState();
+
+    /// <summary>
+    ///     Resets the implementation-specific state of the decoder.
+    /// </summary>
+    protected virtual void ResetState() { }
+
     protected unsafe char[] GetFallbackChars(byte* buffer, int count)
     {
         var fallbackChars = new List<char>();
