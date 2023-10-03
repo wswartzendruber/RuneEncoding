@@ -20,7 +20,7 @@ public abstract partial class RuneDecoder : Decoder
 {
 #if NETSTANDARD2_1_OR_GREATER
     /// <summary>
-    ///     Measures the number of characters that would be needed to decode any pending bytes
+    ///     Measures the number of characters that would be needed to decode any buffered bytes
     ///     in the decoder state followed by a span of bytes. The decoder state <strong>is
     ///     not</strong> modified. Trailing bytes can be counted as a decoding error.
     /// </summary>
@@ -44,7 +44,7 @@ public abstract partial class RuneDecoder : Decoder
     ///     </list>
     /// </param>
     /// <returns>
-    ///     The number of characters that would be needed to decode any pending bytes in the
+    ///     The number of characters that would be needed to decode any buffered bytes in the
     ///     decoder state followed by the span of bytes.
     /// </returns>
     /// <exception cref="DecoderFallbackException">
@@ -65,7 +65,7 @@ public abstract partial class RuneDecoder : Decoder
 #endif
 
     /// <summary>
-    ///     Measures the number of characters that would be needed to decode any pending bytes
+    ///     Measures the number of characters that would be needed to decode any buffered bytes
     ///     in the decoder state followed by an array of bytes. The decoder state <strong>is
     ///     not</strong> modified. Trailing bytes will not be counted as a decoding error.
     /// </summary>
@@ -79,7 +79,7 @@ public abstract partial class RuneDecoder : Decoder
     ///     The number of bytes to measure.
     /// </param>
     /// <returns>
-    ///     The number of characters that would be needed to decode any pending bytes in the
+    ///     The number of characters that would be needed to decode any buffered bytes in the
     ///     decoder state followed by the array of bytes.
     /// </returns>
     /// <exception cref="ArgumentNullException">
@@ -119,7 +119,7 @@ public abstract partial class RuneDecoder : Decoder
         GetCharCount(bytes, index, count, false);
 
     /// <summary>
-    ///     Measures the number of characters that would be needed to decode any pending bytes
+    ///     Measures the number of characters that would be needed to decode any buffered bytes
     ///     in the decoder state followed by an array of bytes. The decoder state <strong>is
     ///     not</strong> modified. Trailing bytes can be counted as a decoding error.
     /// </summary>
@@ -149,7 +149,7 @@ public abstract partial class RuneDecoder : Decoder
     ///     </list>
     /// </param>
     /// <returns>
-    ///     The number of characters that would be needed to decode any pending bytes in the
+    ///     The number of characters that would be needed to decode any buffered bytes in the
     ///     decoder state followed by the array of bytes.
     /// </returns>
     /// <exception cref="ArgumentNullException">
@@ -190,7 +190,7 @@ public abstract partial class RuneDecoder : Decoder
     {
         if (bytes is null)
         {
-            throw new ArgumentNullException("The bytes parameter is null.");
+            throw new ArgumentNullException("bytes");
         }
         if (index < 0)
         {
@@ -213,7 +213,7 @@ public abstract partial class RuneDecoder : Decoder
     }
 
     /// <summary>
-    ///     Measures the number of characters that would be needed to decode any pending bytes
+    ///     Measures the number of characters that would be needed to decode any buffered bytes
     ///     in the decoder state followed by a buffer of bytes. The decoder state <strong>is
     ///     not</strong> modified. Trailing bytes can be counted as a decoding error.
     /// </summary>
@@ -240,7 +240,7 @@ public abstract partial class RuneDecoder : Decoder
     ///     </list>
     /// </param>
     /// <returns>
-    ///     The number of characters that would be needed to decode any pending bytes in the
+    ///     The number of characters that would be needed to decode any buffered bytes in the
     ///     decoder state followed by the buffer of bytes.
     /// </returns>
     /// <exception cref="ArgumentNullException">
@@ -268,7 +268,7 @@ public abstract partial class RuneDecoder : Decoder
     public sealed override unsafe int GetCharCount(byte* bytes, int count, bool flush)
     {
         if (bytes is null)
-            throw new ArgumentNullException("The bytes parameter is null.");
+            throw new ArgumentNullException("bytes");
         if (count < 0)
             throw new ArgumentOutOfRangeException("The count parameter is less than zero.");
 

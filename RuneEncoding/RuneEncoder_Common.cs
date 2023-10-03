@@ -23,10 +23,10 @@ public abstract partial class RuneEncoder : Encoder
     private char? HighSurrogate = null;
 
     /// <summary>
-    ///     Gets whether or not a pending high surrogate is buffered in the encoder's state.
+    ///     Gets whether or not a buffered high surrogate is buffered in the encoder's state.
     /// </summary>
     /// <returns>
-    ///     Whether or not a pending high surrogate is buffered in the encoder's state.
+    ///     Whether or not a buffered high surrogate is buffered in the encoder's state.
     /// </returns>
     public bool Pending
     {
@@ -37,7 +37,7 @@ public abstract partial class RuneEncoder : Encoder
     }
 
     /// <summary>
-    ///     Resets the surrogate state of the encoder; any pending high surrogate is cleared.
+    ///     Resets the surrogate state of the encoder; any buffered high surrogate is cleared.
     ///     Also resets any implementation-specific state.
     /// </summary>
     public override void Reset()
