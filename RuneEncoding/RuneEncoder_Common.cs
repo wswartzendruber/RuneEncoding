@@ -10,6 +10,7 @@
  * SPDX-License-Identifier: CC0-1.0
  */
 
+using System.Collections.Generic;
 using System.Text;
 
 namespace RuneEncoding;
@@ -50,4 +51,38 @@ public abstract partial class RuneEncoder : Encoder
     ///     Resets the implementation-specific state of the encoder.
     /// </summary>
     protected virtual void ResetState() { }
+
+    /// <summary>
+    ///     Gets an array of fallback characters according to a trailing high surrogate.
+    /// </summary>
+    /// <param name="highSurrogate">
+    ///     The high surrogate to consider.
+    /// </param>
+    /// <param name="offset">
+    ///     The position of the high surrogate in the character buffer.
+    /// </param>
+    /// <returns>
+    ///     The array of fallback characters according to a trailing high surrogate.
+    /// </returns>
+    /// <exception cref="EncoderFallbackException">
+    ///     Thrown when <see cref="Encoder.Fallback" /> is set to
+    ///     <see cref="EncoderFallbackException" />.
+    /// </exception>
+    protected unsafe char[] GetFallbackChars(char highSurrogate, int offset)
+    {
+        var fallbackChars = new List<char>();
+        var fallbackBuffer = FallbackBuffer;
+
+        if (fallbackBuffer.Fallback(highSurrogate, offset))
+        {
+            while (fallbackBuffer.Remaining > 0)
+                fallbackChars.Add(fallbackBuffer.GetNextChar());
+        }
+        else
+        {
+            fallbackChars.Add(Constants.ReplacementChar);
+        }
+
+        return fallbackChars.ToArray();
+    }
 }
