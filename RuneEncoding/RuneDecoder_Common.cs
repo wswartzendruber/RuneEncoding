@@ -32,6 +32,22 @@ public abstract partial class RuneDecoder : Decoder
     /// </summary>
     protected virtual void ResetState() { }
 
+    /// <summary>
+    ///     Gets an array of fallback characters according to a byte buffer.
+    /// </summary>
+    /// <param name="buffer">
+    ///     A pointer to the first byte in the buffer of bytes to consider.
+    /// </param>
+    /// <param name="count">
+    ///     The number of bytes to consider.
+    /// </param>
+    /// <returns>
+    ///     The array of fallback characters according to a byte buffer.
+    /// </returns>
+    /// <exception cref="DecoderFallbackException">
+    ///     Thrown when <see cref="Decoder.Fallback" /> is set to
+    ///     <see cref="DecoderFallbackException" />.
+    /// </exception>
     protected unsafe char[] GetFallbackChars(byte* buffer, int count)
     {
         var fallbackChars = new List<char>();
