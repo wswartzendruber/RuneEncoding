@@ -68,7 +68,7 @@ public abstract partial class RuneEncoder : Encoder
     ///     Thrown when <see cref="Encoder.Fallback" /> is set to
     ///     <see cref="EncoderFallbackException" />.
     /// </exception>
-    protected unsafe char[] GetFallbackChars(char highSurrogate, int offset)
+    protected char[] GetFallbackChars(char highSurrogate, int offset)
     {
         var fallbackChars = new List<char>();
         var fallbackBuffer = FallbackBuffer;

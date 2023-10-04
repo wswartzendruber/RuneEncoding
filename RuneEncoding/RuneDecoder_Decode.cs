@@ -49,7 +49,7 @@ public abstract partial class RuneDecoder : Decoder
     ///     </list>
     /// </param>
     /// <returns>
-    ///     The number of characters decoded.
+    ///     The number of characters written.
     /// </returns>
     /// <exception cref="ArgumentException">
     ///     <list>
@@ -104,7 +104,7 @@ public abstract partial class RuneDecoder : Decoder
     ///     The index at which to start writing the decoded characters.
     /// </param>
     /// <returns>
-    ///     The number of characters decoded.
+    ///     The number of characters written.
     /// </returns>
     /// <exception cref="ArgumentException">
     ///     <list>
@@ -207,7 +207,7 @@ public abstract partial class RuneDecoder : Decoder
     ///     </list>
     /// </param>
     /// <returns>
-    ///     The number of characters decoded.
+    ///     The number of characters written.
     /// </returns>
     /// <exception cref="ArgumentException">
     ///     <list>
@@ -296,7 +296,7 @@ public abstract partial class RuneDecoder : Decoder
         if (charIndex > 0 && charIndex >= chars.Length)
         {
             throw new ArgumentOutOfRangeException(
-                "The charIndex parameter lies outside of the char array.");
+                "The charIndex parameter lies outside of the character array.");
         }
 
         fixed (byte* pBytes = bytes)
@@ -348,7 +348,7 @@ public abstract partial class RuneDecoder : Decoder
     ///     </list>
     /// </param>
     /// <returns>
-    ///     The number of characters decoded.
+    ///     The number of characters written.
     /// </returns>
     /// <exception cref="ArgumentException">
     ///     <list>
