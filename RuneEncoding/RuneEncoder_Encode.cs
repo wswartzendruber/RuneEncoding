@@ -111,8 +111,7 @@ public abstract partial class RuneEncoder : Encoder
     ///     <list>
     ///         <item>
     ///             <description>
-    ///                 Thrown when the character array is too small to hold the decoded
-    ///                 characters.
+    ///                 Thrown when the byte array is too small to hold the encoded characters.
     ///             </description>
     ///         </item>
     ///     </list>
@@ -240,8 +239,7 @@ public abstract partial class RuneEncoder : Encoder
     ///     <list>
     ///         <item>
     ///             <description>
-    ///                 Thrown when the character buffer is too small to hold the encoded
-    ///                 characters.
+    ///                 Thrown when the byte buffer is too small to hold the encoded characters.
     ///             </description>
     ///         </item>
     ///     </list>
@@ -250,12 +248,12 @@ public abstract partial class RuneEncoder : Encoder
     ///     <list>
     ///         <item>
     ///             <description>
-    ///                 Thrown when <paramref name="bytes" /> is <see langword="null" />.
+    ///                 Thrown when <paramref name="chars" /> is <see langword="null" />.
     ///             </description>
     ///         </item>
     ///         <item>
     ///             <description>
-    ///                 Thrown when <paramref name="chars" /> is <see langword="null" />.
+    ///                 Thrown when <paramref name="bytes" /> is <see langword="null" />.
     ///             </description>
     ///         </item>
     ///     </list>
@@ -264,19 +262,19 @@ public abstract partial class RuneEncoder : Encoder
     ///     <list>
     ///         <item>
     ///             <description>
-    ///                 Thrown when <paramref name="byteCount" /> is less than zero.
+    ///                 Thrown when <paramref name="charCount" /> is less than zero.
     ///             </description>
     ///         </item>
     ///         <item>
     ///             <description>
-    ///                 Thrown when <paramref name="charCount" /> is less than zero.
+    ///                 Thrown when <paramref name="byteCount" /> is less than zero.
     ///             </description>
     ///         </item>
     ///     </list>
     /// </exception>
-    /// <exception cref="DecoderFallbackException">
-    ///     Thrown when a fallback occurs while <see cref="Decoder.Fallback" /> is set to
-    ///     <see cref="DecoderFallbackException" />.
+    /// <exception cref="EncoderFallbackException">
+    ///     Thrown when a fallback occurs while <see cref="Encoder.Fallback" /> is set to
+    ///     <see cref="EncoderFallbackException" />.
     /// </exception>
     public sealed override unsafe int GetBytes(char* chars, int charCount, byte* bytes
         , int byteCount, bool flush)
