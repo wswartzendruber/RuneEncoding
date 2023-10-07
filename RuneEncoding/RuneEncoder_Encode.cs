@@ -64,7 +64,18 @@ public abstract partial class RuneEncoder : Encoder
     public sealed override unsafe int GetBytes(ReadOnlySpan<char> chars, Span<byte> bytes
         , bool flush)
     {
-        return 0;
+        fixed (char* pChars = chars)
+        fixed (byte* pBytes = bytes)
+        {
+            var rpChars = (chars.Length > 0)
+                ? pChars
+                : (char*)IntPtr.Size;
+            var rpBytes = (bytes.Length > 0)
+                ? pBytes
+                : (byte*)IntPtr.Size;
+
+            return GetBytes(rpChars, chars.Length, rpBytes, bytes.Length, flush);
+        }
     }
 #endif
 
@@ -196,7 +207,19 @@ public abstract partial class RuneEncoder : Encoder
                 "The byteIndex parameter lies outside of the byte array.");
         }
 
-        return 0;
+        fixed (char* pChars = chars)
+        fixed (byte* pBytes = bytes)
+        {
+            var rpChars = (chars.Length > 0)
+                ? pChars
+                : (char*)IntPtr.Size;
+            var rpBytes = (bytes.Length > 0)
+                ? pBytes
+                : (byte*)IntPtr.Size;
+
+            return GetBytes(rpChars + charIndex, charCount, rpBytes + byteIndex
+                , bytes.Length - byteIndex, flush);
+        }
     }
 
     /// <summary>
