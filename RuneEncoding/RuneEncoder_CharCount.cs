@@ -222,4 +222,6 @@ public abstract partial class RuneEncoder : Encoder
 
         return 0;
     }
+
+    protected abstract unsafe int AssessScalarValue(int scalarValue, bool first);
 }

@@ -313,4 +313,6 @@ public abstract partial class RuneEncoder : Encoder
 
         return 0;
     }
+
+    protected abstract unsafe int EncodeScalarValue(int scalarValue, byte* bytes, int limit);
 }
